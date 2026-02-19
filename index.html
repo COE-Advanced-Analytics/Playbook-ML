@@ -509,6 +509,206 @@
             .link-tags { display: none; }
         }
 
+        /* ── FLOATING SUGGESTION POP ── */
+        .suggestion-pop {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .suggestion-bubble {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 8px 32px rgba(26,26,46,0.18);
+            padding: 20px 22px;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-pop.open .suggestion-bubble {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .bubble-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .bubble-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .bubble-close {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-warm);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .bubble-close:hover {
+            background: var(--accent-coral-light);
+        }
+
+        .bubble-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .bubble-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .bubble-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        .bubble-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            background: var(--dark-warm);
+            padding: 9px 20px;
+            border-radius: 100px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .bubble-cta:hover {
+            background: var(--accent-coral);
+            transform: translateY(-1px);
+        }
+
+        .suggestion-fab {
+            width: auto;
+            height: 56px;
+            border-radius: 100px;
+            background: var(--accent-coral);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 22px;
+            box-shadow: 0 4px 16px rgba(232,93,76,0.35);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .suggestion-fab:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 24px rgba(232,93,76,0.45);
+        }
+
+        .fab-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-pop.open .fab-label {
+            display: none;
+        }
+
+        .suggestion-fab .fab-icon,
+        .suggestion-fab .fab-close {
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-fab .fab-close {
+            position: absolute;
+            opacity: 0;
+            transform: rotate(-90deg);
+        }
+
+        .suggestion-pop.open .suggestion-fab {
+            width: 56px;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        .suggestion-pop.open .suggestion-fab .fab-icon {
+            opacity: 0;
+            transform: rotate(90deg);
+            position: absolute;
+        }
+
+        .suggestion-pop.open .suggestion-fab .fab-close {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        .fab-pulse {
+            position: absolute;
+            inset: 0;
+            border-radius: 100px;
+            background: var(--accent-coral);
+            animation: fab-ring 2.5s ease-out infinite;
+            pointer-events: none;
+        }
+
+        .suggestion-pop.open .fab-pulse {
+            animation: none;
+            opacity: 0;
+        }
+
+        @keyframes fab-ring {
+            0% { transform: scale(1); opacity: 0.35; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        @media (max-width: 640px) {
+            .suggestion-pop { bottom: 16px; right: 16px; }
+            .suggestion-bubble { max-width: 260px; padding: 16px 18px; }
+            .suggestion-fab { height: 50px; padding: 0 18px; }
+            .fab-label { font-size: 12px; }
+            .suggestion-pop.open .suggestion-fab { width: 50px; }
+        }
+
         /* ── FOOTER ── */
         .footer {
             text-align: center;
@@ -846,5 +1046,50 @@
             <p>Advanced Analytics — Data Science & ML</p>
         </div>
     </div>
+    <!-- FLOATING SUGGESTION POP -->
+    <div class="suggestion-pop" id="suggestionPop">
+        <div class="suggestion-bubble">
+            <div class="bubble-header">
+                <div class="bubble-title">💡 ¿Qué te gustaría ver?</div>
+                <button class="bubble-close" onclick="togglePop()">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2l6 6M8 2l-6 6" stroke="#3D3A36" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="bubble-items">
+                <div class="bubble-item">
+                    <div class="bubble-dot" style="background:var(--accent-coral)"></div>
+                    Sugerencias de temas
+                </div>
+                <div class="bubble-item">
+                    <div class="bubble-dot" style="background:var(--accent-teal)"></div>
+                    Preguntas sobre algún volumen
+                </div>
+                <div class="bubble-item">
+                    <div class="bubble-dot" style="background:var(--accent-gold)"></div>
+                    Temas que quieras profundizar
+                </div>
+                <div class="bubble-item">
+                    <div class="bubble-dot" style="background:var(--accent-coral)"></div>
+                    Ideas que quieras desarrollar
+                </div>
+            </div>
+            <a href="mailto:data-scientist@alicorp.com.pe?subject=Playbook%20Analytics%20—%20Sugerencia" class="bubble-cta">
+                Escribir al equipo
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8.5 3.5L12 7l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </div>
+        <button class="suggestion-fab" onclick="togglePop()">
+            <div class="fab-pulse"></div>
+            <svg class="fab-icon" width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="5" width="18" height="13" rx="2" stroke="white" stroke-width="1.8"/><path d="M2 7l8.4 5.25a1 1 0 001.2 0L20 7" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="fab-label">Buzón Analytics</span>
+            <svg class="fab-close" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
+    </div>
+
+    <script>
+        function togglePop() {
+            document.getElementById('suggestionPop').classList.toggle('open');
+        }
+    </script>
 </body>
 </html>
