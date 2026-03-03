@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muestreo para Pilotos | Playbook Analytics Vol. 04</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-cream: #FDFBF7;
+            --bg-warm: #F8F5F0;
+            --bg-card: #FFFFFF;
+            --text-primary: #3D3A36;
+            --text-secondary: #4a4a5a;
+            --text-muted: #7a7a8a;
+            --accent-coral: #E85D4C;
+            --accent-coral-dark: #C94A3A;
+            --accent-coral-light: #FFF0EE;
+            --accent-teal: #2D9C9C;
+            --accent-teal-dark: #238080;
+            --accent-teal-light: #E8F6F6;
+            --accent-gold: #D4A853;
+            --accent-gold-dark: #C4983F;
+            --accent-gold-light: #FDF8EC;
+            --dark-warm: #3D3A36;
+            --border-light: #E8E4DD;
+            --shadow-sm: 0 2px 8px rgba(26,26,46,0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        /* ── HEADER ── */
+        header { background: linear-gradient(135deg, var(--bg-warm) 0%, var(--bg-cream) 100%); border-radius: 20px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; border: 1px solid var(--border-light); }
+        header::before { content: ''; position: absolute; bottom: -40px; right: -20px; width: 200px; height: 200px; background: radial-gradient(circle, var(--accent-coral-light) 0%, transparent 70%); border-radius: 50%; }
+        .header-main { display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; }
+        .header-avatar { flex-shrink: 0; }
+        .header-text { flex: 1; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .area-logo { display: flex; align-items: center; gap: 8px; }
+        .area-logo svg { width: 30px; height: 30px; }
+        .logo-name { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-primary); display: block; }
+        .logo-tagline { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+        .badge { display: flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--border-light); padding: 4px 12px; border-radius: 100px; font-size: 10px; font-weight: 600; color: var(--accent-coral); text-transform: uppercase; }
+        .badge-dot { width: 6px; height: 6px; background: var(--accent-coral); border-radius: 50%; }
+        .badge-vol { background: var(--accent-coral); color: white; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; line-height: 1.2; color: var(--text-primary); margin-bottom: 8px; }
+        h1 .highlight { color: var(--accent-coral); }
+        .subtitle { font-size: 12px; color: var(--text-muted); max-width: 400px; }
+
+        /* ── PROBLEM ── */
+        .problem-section { background: var(--bg-card); border-left: 4px solid var(--accent-gold); border-radius: 0 14px 14px 0; padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-sm); }
+        .problem-content h2 { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 800; color: var(--accent-coral); margin-bottom: 6px; }
+        .problem-content p { font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+        .problem-content p strong { color: var(--text-primary); }
+
+        /* ── CARDS 2 COL ── */
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .card { background: var(--bg-card); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .card-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .card-icon.positive { background: var(--accent-teal-light); }
+        .card-icon.negative { background: var(--accent-coral-light); }
+        .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 800; flex: 1; }
+        .card-title.positive { color: var(--accent-teal); }
+        .card-title.negative { color: var(--accent-coral); }
+        .card-pixel { margin-left: auto; }
+        .item-list { list-style: none; }
+        .item-list li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+        .list-icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 9px; margin-top: 1px; }
+        .list-icon.positive { background: var(--accent-teal-light); color: var(--accent-teal); }
+        .list-icon.negative { background: var(--accent-coral-light); color: var(--accent-coral); }
+        .list-text strong { display: block; font-size: 11px; font-weight: 700; color: var(--text-primary); }
+        .list-text span { display: block; font-size: 9px; color: var(--text-muted); line-height: 1.4; }
+
+        /* ── EXAMPLE ── */
+        .example-section { background: var(--bg-card); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .example-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .example-icon { font-size: 16px; }
+        .example-title { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 800; color: var(--accent-coral); flex: 1; }
+        .cases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .case-card { border-radius: 12px; padding: 12px; }
+        .case-card.option-a { border: 1px dashed rgba(232,93,76,0.3); background: var(--accent-coral-light); }
+        .case-card.option-b { border: 2px solid var(--accent-teal); background: var(--accent-teal-light); }
+        .case-header { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+        .case-number { font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; color: white; }
+        .case-card.option-a .case-number { background: var(--accent-coral); }
+        .case-card.option-b .case-number { background: var(--accent-teal); }
+        .case-label { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; }
+        .case-card.option-a .case-label { color: var(--accent-coral); }
+        .case-card.option-b .case-label { color: var(--accent-teal); }
+        .case-rule { background: white; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 500; }
+        .case-detail { font-size: 9px; margin-bottom: 4px; line-height: 1.4; color: var(--text-secondary); }
+        .case-detail strong.a { color: var(--accent-coral); }
+        .case-detail strong.b { color: var(--accent-teal); }
+        .case-result { border-radius: 6px; padding: 8px; text-align: center; margin-top: 8px; }
+        .case-result.bad { background: rgba(232,93,76,0.1); }
+        .case-result.good { background: rgba(45,156,156,0.15); }
+        .result-label { display: block; font-size: 8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+        .result-value { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
+        .case-result.bad .result-value { color: var(--accent-coral); }
+        .case-result.good .result-value { color: var(--accent-teal); }
+        .result-desc { display: block; font-size: 8px; color: var(--text-muted); margin-top: 2px; }
+        .example-insight { background: var(--accent-gold-light); border-top: 2px solid var(--accent-gold); border-radius: 0 0 8px 8px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 8px; font-size: 10px; color: var(--text-secondary); line-height: 1.5; }
+        .example-insight strong { color: var(--accent-gold-dark); }
+        .example-insight em { color: var(--accent-teal); text-decoration: underline; font-style: normal; }
+
+        /* ── ERROR ── */
+        .error-section { background: var(--accent-coral-light); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+        .error-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .error-icon { width: 28px; height: 28px; background: var(--accent-coral); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .error-title { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent-coral); flex: 1; }
+        .error-content { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .error-box { background: white; border-radius: 8px; padding: 10px; font-size: 10px; }
+        .error-box .label { font-size: 9px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .error-box.wrong { border: 1px dashed var(--accent-coral); }
+        .error-box.wrong .label { color: var(--accent-coral); }
+        .error-box.right { border: 1px solid var(--accent-teal); }
+        .error-box.right .label { color: var(--accent-teal); }
+        .error-box p { color: var(--text-secondary); line-height: 1.4; }
+
+        /* ── TAKEAWAY ── */
+        .takeaway { background: linear-gradient(135deg, var(--dark-warm) 0%, #2a2a3e 100%); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; }
+        .takeaway-text { font-size: 11px; color: rgba(255,255,255,0.85); line-height: 1.6; }
+        .takeaway-text strong { color: var(--accent-gold); font-weight: 700; }
+
+        /* ── FOOTER ── */
+        footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border-light); }
+        .footer-logo { display: flex; align-items: center; gap: 8px; }
+        .footer-logo svg { width: 24px; height: 24px; }
+        .footer-logo-text .footer-name { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-primary); display: block; }
+        .footer-logo-text .footer-tagline { font-size: 8px; color: var(--text-muted); display: block; }
+        .footer-tags { display: flex; gap: 6px; }
+        .footer-tag { font-size: 9px; background: var(--bg-warm); padding: 3px 10px; border-radius: 100px; color: var(--text-muted); border: 1px solid var(--border-light); }
+
+        /* ── WEB ── */
+        html { background: #f0ede8; }
+        .web-wrapper { max-width: 210mm; margin: 0 auto; padding: 32px 16px; }
+        .back-bar { position: sticky; top: 0; z-index: 100; background: rgba(61,58,54,0.95); backdrop-filter: blur(10px); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; border-radius: 0 0 12px 12px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; color: white; text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 100px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+        .back-btn svg { width: 14px; height: 14px; }
+        .back-bar-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.8px; }
+
+        /* ── PILOT DESIGN BOX ── */
+        .pilot-section { background: var(--bg-card); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .pilot-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .pilot-title { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 800; color: var(--accent-teal); flex: 1; }
+        .pilot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .pilot-cell { background: var(--bg-warm); border: 1px solid var(--border-light); border-radius: 10px; padding: 10px 12px; }
+        .pilot-cell-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 4px; }
+        .pilot-cell.ct { border-top: 3px solid var(--accent-teal); }
+        .pilot-cell.cc { border-top: 3px solid var(--accent-coral); }
+        .pilot-cell.cg { border-top: 3px solid var(--accent-gold); }
+        .pilot-cell.cp { border-top: 3px solid #8B7EC8; }
+        .pilot-cell-value { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin-bottom: 3px; }
+        .pilot-cell-desc { font-size: 9px; color: var(--text-muted); line-height: 1.3; }
+        .pilot-insight { margin-top: 10px; background: var(--accent-teal-light); border-radius: 8px; padding: 8px 12px; font-size: 9.5px; color: var(--text-secondary); line-height: 1.5; display: flex; gap: 6px; align-items: flex-start; }
+        .pilot-insight strong { color: var(--accent-teal-dark); }
+
+        /* ── RIESGOS OPERATIVOS (nuevo) ── */
+        .risks-section { background: var(--bg-card); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .risks-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .risks-title { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 800; color: var(--accent-coral); flex: 1; }
+        .risks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .risk-card { border-radius: 10px; padding: 10px 12px; border: 1px solid var(--border-light); background: var(--bg-warm); }
+        .risk-tag { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
+        .risk-tag.alto { background: rgba(232,93,76,0.15); color: var(--accent-coral-dark); }
+        .risk-tag.medio { background: rgba(212,168,83,0.2); color: var(--accent-gold-dark); }
+        .risk-card strong { display: block; font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+        .risk-card p { font-size: 9px; color: var(--text-muted); line-height: 1.4; }
+        .risk-card .fix { font-size: 9px; color: var(--accent-teal-dark); margin-top: 4px; font-weight: 600; }
+
+        /* ── SEÑALES + ESCALAR (nuevo) ── */
+        .scale-section { background: var(--bg-card); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .scale-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .scale-title { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 800; color: var(--accent-teal); flex: 1; }
+        .scale-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .scale-col-title { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding: 3px 8px; border-radius: 5px; display: inline-block; }
+        .scale-col-title.signal { background: var(--accent-teal-light); color: var(--accent-teal-dark); }
+        .scale-col-title.when { background: var(--accent-gold-light); color: var(--accent-gold-dark); }
+        .scale-col-title.how { background: rgba(139,126,200,0.15); color: #5c51a0; }
+        .scale-item { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 7px; }
+        .scale-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+        .scale-dot.signal { background: var(--accent-teal); }
+        .scale-dot.when { background: var(--accent-gold); }
+        .scale-dot.how { background: #8B7EC8; }
+        .scale-item-text { font-size: 9.5px; color: var(--text-secondary); line-height: 1.4; }
+        .scale-item-text strong { color: var(--text-primary); font-size: 11px; }
+        .scale-insight { background: linear-gradient(135deg, var(--accent-teal-light), var(--accent-gold-light)); border-radius: 8px; padding: 10px 14px; font-size: 10px; color: var(--text-secondary); line-height: 1.5; display: flex; gap: 8px; }
+        .scale-insight strong { color: var(--accent-teal-dark); }
+
+        @media (max-width: 800px) {
+            body { width: 100% !important; padding: 16px !important; }
+            .main-grid, .cases-grid, .error-content, .pilot-grid, .risks-grid, .scale-grid { grid-template-columns: 1fr !important; }
+            h1 { font-size: 22px !important; }
+            .web-wrapper { padding: 16px 8px; }
+        }
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .back-bar { display: none; }
+            .web-wrapper { padding: 0; }
+        }
+        ::selection { background: rgba(232,93,76,0.2); color: var(--text-primary); }
+    </style>
+</head>
+<body>
+<div class="web-wrapper">
+
+    <div class="back-bar">
+        <a href="../" class="back-btn">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Todos los Playbooks
+        </a>
+        <span class="back-bar-label">Playbook Vol. 04</span>
+    </div>
+
+
+    <!-- ══ 1. HEADER ══ -->
+    <header>
+        <div class="header-main">
+            <div class="header-avatar">
+                <svg width="95" height="110" viewBox="0 0 130 140" fill="none">
+                    <ellipse cx="30" cy="95" rx="10" ry="16" fill="#C94A3A" transform="rotate(10 30 95)"/>
+                    <ellipse cx="32" cy="94" rx="6" ry="12" fill="#B84039" transform="rotate(10 32 94)"/>
+                    <ellipse cx="100" cy="95" rx="10" ry="16" fill="#C94A3A" transform="rotate(-10 100 95)"/>
+                    <ellipse cx="98" cy="94" rx="6" ry="12" fill="#B84039" transform="rotate(-10 98 94)"/>
+                    <ellipse cx="65" cy="95" rx="38" ry="33" fill="url(#hBody)"/>
+                    <ellipse cx="65" cy="100" rx="26" ry="23" fill="#FFF0EE"/>
+                    <circle cx="50" cy="88" r="5" fill="#E85D4C" fill-opacity="0.7"/>
+                    <circle cx="65" cy="82" r="5" fill="#E85D4C" fill-opacity="0.7"/>
+                    <circle cx="80" cy="88" r="5" fill="#E85D4C" fill-opacity="0.7"/>
+                    <circle cx="55" cy="100" r="5" fill="#E85D4C" fill-opacity="0.5"/>
+                    <circle cx="75" cy="100" r="5" fill="#E85D4C" fill-opacity="0.5"/>
+                    <circle cx="65" cy="112" r="6" fill="#D4A853"/>
+                    <line x1="50" y1="88" x2="65" y2="82" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="80" y1="88" x2="65" y2="82" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="50" y1="88" x2="55" y2="100" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="80" y1="88" x2="75" y2="100" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="55" y1="100" x2="65" y2="112" stroke="#D4A853" stroke-width="2" stroke-opacity="0.6"/>
+                    <line x1="75" y1="100" x2="65" y2="112" stroke="#D4A853" stroke-width="2" stroke-opacity="0.6"/>
+                    <ellipse cx="65" cy="50" rx="33" ry="28" fill="url(#hHead)"/>
+                    <path d="M37 35L32 17L47 30Z" fill="#C94A3A"/>
+                    <path d="M93 35L98 17L83 30Z" fill="#C94A3A"/>
+                    <circle cx="50" cy="48" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/>
+                    <circle cx="80" cy="48" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/>
+                    <circle cx="52" cy="50" r="6" fill="#3D3A36"/><circle cx="82" cy="50" r="6" fill="#3D3A36"/>
+                    <circle cx="54" cy="48" r="2" fill="white"/><circle cx="84" cy="48" r="2" fill="white"/>
+                    <path d="M37 48C37 48 42 43 50 43" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M93 48C93 48 88 43 80 43" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="62" y1="48" x2="68" y2="48" stroke="#D4A853" stroke-width="3"/>
+                    <path d="M65 60L61 69L65 67L69 69Z" fill="#D4A853"/>
+                    <path d="M50 123L45 133M50 123L50 133M50 123L55 133" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M80 123L75 133M80 123L80 133M80 123L85 133" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="hBody" x1="27" y1="62" x2="103" y2="128"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient>
+                        <linearGradient id="hHead" x1="32" y1="22" x2="98" y2="78"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div class="header-text">
+                <div class="header-top">
+                    <div class="area-logo">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect width="40" height="40" rx="10" fill="url(#logoGrad)"/>
+                            <circle cx="12" cy="15" r="3" fill="white"/><circle cx="12" cy="20" r="3" fill="white"/><circle cx="12" cy="25" r="3" fill="white"/>
+                            <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/><circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                            <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient></defs>
+                        </svg>
+                        <div class="area-logo-text">
+                            <span class="logo-name">Advanced Analytics</span>
+                            <span class="logo-tagline">Data Science & ML</span>
+                        </div>
+                    </div>
+                    <div class="badge"><span class="badge-dot"></span>Playbook<span class="badge-vol">Vol. 04</span></div>
+                </div>
+                <h1>Muestreo: <span class="highlight">a quién incluir</span> en tu piloto</h1>
+                <p class="subtitle">Cómo elegir el grupo correcto para validar una iniciativa — antes de comprometer toda la operación.</p>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- ══ 2. PROBLEMA ══ -->
+    <div class="problem-section">
+        <svg width="46" height="53" viewBox="0 0 120 140" fill="none">
+            <ellipse cx="60" cy="95" rx="36" ry="31" fill="#E85D4C"/>
+            <ellipse cx="32" cy="70" rx="9" ry="16" fill="#C94A3A" transform="rotate(-30 32 70)"/>
+            <ellipse cx="35" cy="72" rx="6" ry="11" fill="#E85D4C" transform="rotate(-30 35 72)"/>
+            <ellipse cx="92" cy="88" rx="9" ry="15" fill="#C94A3A" transform="rotate(15 92 88)"/>
+            <ellipse cx="90" cy="86" rx="6" ry="11" fill="#E85D4C" transform="rotate(15 90 86)"/>
+            <ellipse cx="60" cy="100" rx="22" ry="19" fill="#FFF0EE"/>
+            <circle cx="50" cy="92" r="4" fill="#E85D4C" fill-opacity="0.5"/><circle cx="60" cy="87" r="4" fill="#E85D4C" fill-opacity="0.5"/><circle cx="70" cy="92" r="4" fill="#E85D4C" fill-opacity="0.5"/>
+            <circle cx="60" cy="106" r="5" fill="#D4A853"/>
+            <ellipse cx="60" cy="50" rx="32" ry="27" fill="#E85D4C"/>
+            <path d="M33 35L29 19L43 32Z" fill="#C94A3A"/><path d="M87 35L91 19L77 32Z" fill="#C94A3A"/>
+            <circle cx="46" cy="48" r="12" fill="white"/><circle cx="74" cy="48" r="12" fill="white"/>
+            <circle cx="48" cy="45" r="5" fill="#3D3A36"/><circle cx="76" cy="45" r="5" fill="#3D3A36"/>
+            <circle cx="49" cy="43" r="1.5" fill="white"/><circle cx="77" cy="43" r="1.5" fill="white"/>
+            <path d="M54 67C54 67 60 67 66 67" stroke="#D4A853" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M60 59L57 66L60 64L63 66Z" fill="#D4A853"/>
+            <text x="88" y="26" fill="#D4A853" font-size="14" font-weight="bold">?</text>
+        </svg>
+        <div class="problem-content">
+            <h2>🎯 Qué resuelve este playbook</h2>
+            <p>Un piloto bien diseñado puede fallar antes de arrancar si el grupo elegido no es representativo. <strong>El muestreo define a quién incluyes, en qué proporción y por qué — y eso determina si los resultados son extrapolables al negocio real o solo a ese grupo.</strong> Este playbook se enfoca en la selección de grupos: cuándo necesitas variedad, cuándo necesitas equilibrio, y cómo evitar que el diseño de la muestra invalide el experimento.</p>
+        </div>
+    </div>
+
+
+    <!-- ══ 3. QUÉ SÍ / QUÉ NO ══ -->
+    <div class="main-grid">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon positive">
+                    <svg width="26" height="26" viewBox="0 0 50 50" fill="none">
+                        <ellipse cx="25" cy="30" rx="14" ry="12" fill="#2D9C9C"/>
+                        <ellipse cx="25" cy="20" rx="13" ry="11" fill="#2D9C9C"/>
+                        <circle cx="19" cy="18" r="4" fill="white"/><circle cx="31" cy="18" r="4" fill="white"/>
+                        <circle cx="20" cy="19" r="2" fill="#3D3A36"/><circle cx="32" cy="19" r="2" fill="#3D3A36"/>
+                        <path d="M20 26C20 26 25 30 30 26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="card-title positive">Qué SÍ garantiza una buena muestra</div>
+                <div class="card-pixel">
+                    <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                        <ellipse cx="65" cy="95" rx="34" ry="29" fill="#2D9C9C"/>
+                        <ellipse cx="35" cy="88" rx="9" ry="15" fill="#238080" transform="rotate(-15 35 88)"/>
+                        <ellipse cx="37" cy="86" rx="6" ry="11" fill="#2D9C9C" transform="rotate(-15 37 86)"/>
+                        <ellipse cx="102" cy="70" rx="9" ry="17" fill="#238080" transform="rotate(60 102 70)"/>
+                        <ellipse cx="100" cy="73" rx="6" ry="12" fill="#2D9C9C" transform="rotate(60 100 73)"/>
+                        <ellipse cx="65" cy="100" rx="21" ry="18" fill="#E8F6F6"/>
+                        <circle cx="55" cy="94" r="3" fill="#2D9C9C" fill-opacity="0.5"/><circle cx="65" cy="90" r="3" fill="#2D9C9C" fill-opacity="0.5"/><circle cx="75" cy="94" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="106" r="4" fill="#D4A853"/>
+                        <ellipse cx="65" cy="50" rx="30" ry="25" fill="#2D9C9C"/>
+                        <path d="M40 35L36 21L50 33Z" fill="#238080"/><path d="M90 35L94 21L80 33Z" fill="#238080"/>
+                        <circle cx="50" cy="48" r="11" fill="white"/><circle cx="80" cy="48" r="11" fill="white"/>
+                        <circle cx="52" cy="50" r="5" fill="#3D3A36"/><circle cx="82" cy="50" r="5" fill="#3D3A36"/>
+                        <circle cx="53" cy="48" r="1.5" fill="white"/><circle cx="83" cy="48" r="1.5" fill="white"/>
+                        <path d="M55 64C55 64 65 72 75 64" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                    </svg>
+                </div>
+            </div>
+            <ul class="item-list">
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Resultados extrapolables</strong><span>Si el grupo refleja la composición real del negocio, el resultado puede proyectarse al 100%</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Grupos de acción y control comparables</strong><span>Perfiles similares en los dos grupos aseguran que compares peras con peras</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Señales claras por segmento</strong><span>Puedes ver si el efecto es distinto en canal moderno vs. tradicional, Lima vs. regiones</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Tamaño suficiente para detectar diferencias reales</strong><span>Una muestra demasiado pequeña oculta efectos que sí existen</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Cobertura de variedad operativa</strong><span>Incluir distintos tipos de clientes evita que el resultado sea válido solo para un perfil</span></div></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon negative">
+                    <svg width="26" height="26" viewBox="0 0 50 50" fill="none">
+                        <ellipse cx="25" cy="30" rx="14" ry="12" fill="#E85D4C"/>
+                        <ellipse cx="25" cy="20" rx="13" ry="11" fill="#E85D4C"/>
+                        <circle cx="19" cy="18" r="4" fill="white"/><circle cx="31" cy="18" r="4" fill="white"/>
+                        <circle cx="20" cy="19" r="2" fill="#3D3A36"/><circle cx="32" cy="19" r="2" fill="#3D3A36"/>
+                        <path d="M20 28C20 28 25 24 30 28" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="card-title negative">Qué NO resuelve el muestreo solo</div>
+                <div class="card-pixel">
+                    <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                        <ellipse cx="65" cy="95" rx="34" ry="29" fill="#E85D4C"/>
+                        <ellipse cx="50" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(25 50 82)"/>
+                        <ellipse cx="52" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(25 52 84)"/>
+                        <ellipse cx="80" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(-25 80 82)"/>
+                        <ellipse cx="78" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(-25 78 84)"/>
+                        <ellipse cx="65" cy="100" rx="21" ry="18" fill="#FFF0EE"/>
+                        <circle cx="55" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="65" cy="90" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="75" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="106" r="4" fill="#D4A853"/>
+                        <ellipse cx="65" cy="50" rx="30" ry="25" fill="#E85D4C"/>
+                        <path d="M40 35L36 21L50 33Z" fill="#C94A3A"/><path d="M90 35L94 21L80 33Z" fill="#C94A3A"/>
+                        <circle cx="50" cy="48" r="11" fill="white"/><circle cx="80" cy="48" r="11" fill="white"/>
+                        <circle cx="52" cy="50" r="5" fill="#3D3A36"/><circle cx="82" cy="50" r="5" fill="#3D3A36"/>
+                        <circle cx="53" cy="48" r="1.5" fill="white"/><circle cx="83" cy="48" r="1.5" fill="white"/>
+                        <path d="M40 40C44 38 50 38 56 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M90 40C86 38 80 38 74 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M55 68C55 68 65 62 75 68" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                    </svg>
+                </div>
+            </div>
+            <ul class="item-list">
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Garantizar ejecución perfecta</strong><span>Un grupo bien seleccionado no sirve si el equipo de campo aplica la acción de forma inconsistente</span></div></li>
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Compensar una métrica mal definida</strong><span>Si no acordaste qué vas a medir antes de arrancar, la mejor muestra no te dará claridad</span></div></li>
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Eliminar el ruido del contexto</strong><span>Para eso existe el grupo control — el muestreo define quién entra, no aísla el efecto por sí solo</span></div></li>
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Reemplazar el juicio comercial</strong><span>El resultado del piloto informa la decisión, no la toma: el contexto operativo sigue siendo tuyo</span></div></li>
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Validar iniciativas sin hipótesis</strong><span>"Veamos qué pasa" no es una hipótesis — y sin ella, cualquier resultado puede interpretarse de formas opuestas</span></div></li>
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- ══ 4. DISEÑO DEL GRUPO ══ -->
+    <div class="pilot-section">
+        <div class="pilot-header">
+            <div class="example-icon">🗂️</div>
+            <div class="pilot-title">Cómo elegir el grupo: 3 situaciones de negocio</div>
+            <svg width="36" height="42" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="60" cy="95" rx="32" ry="27" fill="#2D9C9C"/>
+                <ellipse cx="32" cy="86" rx="8" ry="14" fill="#238080" transform="rotate(-15 32 86)"/>
+                <ellipse cx="34" cy="84" rx="5" ry="10" fill="#2D9C9C" transform="rotate(-15 34 84)"/>
+                <ellipse cx="100" cy="72" rx="8" ry="16" fill="#238080" transform="rotate(70 100 72)"/>
+                <ellipse cx="98" cy="75" rx="5" ry="11" fill="#2D9C9C" transform="rotate(70 98 75)"/>
+                <ellipse cx="60" cy="100" rx="19" ry="16" fill="#E8F6F6"/>
+                <circle cx="52" cy="95" r="3" fill="#2D9C9C" fill-opacity="0.5"/><circle cx="60" cy="91" r="3" fill="#2D9C9C" fill-opacity="0.5"/><circle cx="68" cy="95" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                <circle cx="60" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="60" cy="50" rx="28" ry="24" fill="#2D9C9C"/>
+                <path d="M37 35L33 22L46 33Z" fill="#238080"/><path d="M83 35L87 22L74 33Z" fill="#238080"/>
+                <circle cx="47" cy="48" r="10" fill="white"/><circle cx="73" cy="48" r="10" fill="white"/>
+                <circle cx="50" cy="50" r="4" fill="#3D3A36"/><circle cx="76" cy="50" r="4" fill="#3D3A36"/>
+                <circle cx="51" cy="48" r="1.5" fill="white"/><circle cx="77" cy="48" r="1.5" fill="white"/>
+                <path d="M53 64C53 64 60 67 67 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M60 57L57 63L60 61L63 63Z" fill="#D4A853"/>
+            </svg>
+        </div>
+        <div class="pilot-grid">
+            <div class="pilot-cell ct">
+                <div class="pilot-cell-label">📊 Iniciativa nueva en toda la base</div>
+                <div class="pilot-cell-value">Por segmento de cliente</div>
+                <div class="pilot-cell-desc">Incluye clientes de cada canal, zona y tamaño en proporción similar a la base total. Así el resultado refleja el mix real del negocio.</div>
+            </div>
+            <div class="pilot-cell cc">
+                <div class="pilot-cell-label">⚖️ Grupos muy distintos entre sí</div>
+                <div class="pilot-cell-value">Con cuotas por grupo</div>
+                <div class="pilot-cell-desc">Si canal moderno y tradicional se comportan muy distinto, fuerza que ambos estén bien representados — aunque uno sea minoritario en la base.</div>
+            </div>
+            <div class="pilot-cell cg">
+                <div class="pilot-cell-label">⚡ Necesitas señal rápida</div>
+                <div class="pilot-cell-value">Selección aleatoria simple</div>
+                <div class="pilot-cell-desc">Cuando la prioridad es velocidad y la base es homogénea. Menor precisión por segmento, pero válido para medir el efecto global.</div>
+            </div>
+            <div class="pilot-cell cp">
+                <div class="pilot-cell-label">🤖 Piloto de modelo de ML</div>
+                <div class="pilot-cell-value">Balanceado por clase</div>
+                <div class="pilot-cell-desc">Cuando el grupo objetivo tiene baja frecuencia (ej. clientes en riesgo), necesitas forzar paridad para que el modelo tenga señal suficiente.</div>
+            </div>
+        </div>
+        <div class="pilot-insight">
+            <span>💡</span>
+            <span><strong>Regla práctica:</strong> El grupo de acción y el grupo control deben diseñarse con el mismo criterio de selección. Si eliges clientes de Lima para el piloto, el control también debe ser de Lima — no del resto del país.</span>
+        </div>
+    </div>
+
+
+    <!-- ══ 5. EJEMPLO CASO ══ -->
+    <div class="example-section">
+        <div class="example-header">
+            <div class="example-icon">📊</div>
+            <div class="example-title">Ejemplo: Validar un incentivo de recompra en canal tradicional</div>
+            <svg width="36" height="42" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="60" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="86" rx="8" ry="14" fill="#C94A3A" transform="rotate(-15 32 86)"/>
+                <ellipse cx="34" cy="84" rx="5" ry="10" fill="#E85D4C" transform="rotate(-15 34 84)"/>
+                <ellipse cx="100" cy="72" rx="8" ry="16" fill="#C94A3A" transform="rotate(70 100 72)"/>
+                <ellipse cx="98" cy="75" rx="5" ry="11" fill="#E85D4C" transform="rotate(70 98 75)"/>
+                <ellipse cx="60" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="52" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="60" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="68" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="60" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="60" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M37 35L33 22L46 33Z" fill="#C94A3A"/><path d="M83 35L87 22L74 33Z" fill="#C94A3A"/>
+                <circle cx="47" cy="48" r="10" fill="white"/><circle cx="73" cy="48" r="10" fill="white"/>
+                <circle cx="50" cy="50" r="4" fill="#3D3A36"/><circle cx="76" cy="50" r="4" fill="#3D3A36"/>
+                <circle cx="51" cy="48" r="1.5" fill="white"/><circle cx="77" cy="48" r="1.5" fill="white"/>
+                <path d="M53 64C53 64 60 67 67 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M60 57L57 63L60 61L63 63Z" fill="#D4A853"/>
+            </svg>
+        </div>
+        <div class="cases-grid">
+            <div class="case-card option-a">
+                <div class="case-header">
+                    <span class="case-number">Muestra sesgada</span>
+                    <span class="case-label">Solo bodegas A</span>
+                </div>
+                <div class="case-rule"><span>⚠️</span> Solo clientes de alto ticket en Lima centro</div>
+                <div class="case-detail">📍 <strong class="a">Problema de zona:</strong> Lima centro tiene comportamiento estacional distinto al resto</div>
+                <div class="case-detail">💰 <strong class="a">Problema de perfil:</strong> clientes A ya recompran bien — el incentivo no les mueve la aguja</div>
+                <div class="case-detail">📉 <strong class="a">Resultado engañoso:</strong> el piloto "funciona" pero al escalar a bodegas B y C, el efecto desaparece</div>
+                <div class="case-result bad">
+                    <span class="result-label">Decisión resultante</span>
+                    <span class="result-value">Falso ✓</span>
+                    <span class="result-desc">Escalan una iniciativa que no funciona en la mayoría de la base</span>
+                </div>
+            </div>
+            <div class="case-card option-b">
+                <div class="case-header">
+                    <span class="case-number">Muestra representativa</span>
+                    <span class="case-label">Mix A, B y C</span>
+                </div>
+                <div class="case-rule"><span>✅</span> Clientes A, B y C en proporción a la base real</div>
+                <div class="case-detail">🗺️ <strong class="b">Mix de zonas:</strong> Lima + provincias en proporción similar al portafolio total</div>
+                <div class="case-detail">📦 <strong class="b">Mix de ticket:</strong> incluye clientes de baja frecuencia donde el incentivo tiene más potencial</div>
+                <div class="case-detail">🎯 <strong class="b">Resultado accionable:</strong> si funciona, el modelo de escalado ya está validado en los perfiles correctos</div>
+                <div class="case-result good">
+                    <span class="result-label">Decisión resultante</span>
+                    <span class="result-value">Señal real</span>
+                    <span class="result-desc">El resultado del piloto es extrapolable a la base completa</span>
+                </div>
+            </div>
+        </div>
+        <div class="example-insight">
+            <span>💡</span>
+            <div><strong>La diferencia clave:</strong> No es solo cuántos clientes incluyes sino <em>qué combinación de perfiles.</em> Un piloto con 5,000 clientes bien seleccionados da mejor señal que uno con 20,000 del mismo tipo.</div>
+        </div>
+    </div>
+
+
+    <!-- ══ 6. ERROR COMÚN ══ -->
+    <div class="error-section">
+        <div class="error-header">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">Error común: Elegir el grupo más "fácil de medir"</div>
+            <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="65" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(-40 32 72)"/>
+                <ellipse cx="35" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(-40 35 75)"/>
+                <ellipse cx="98" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(40 98 72)"/>
+                <ellipse cx="95" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(40 95 75)"/>
+                <ellipse cx="65" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="55" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="65" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="75" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="65" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M40 35L36 22L50 33Z" fill="#C94A3A"/><path d="M90 35L94 22L80 33Z" fill="#C94A3A"/>
+                <circle cx="50" cy="48" r="10" fill="white"/><circle cx="80" cy="48" r="10" fill="white"/>
+                <circle cx="52" cy="46" r="4" fill="#3D3A36"/><circle cx="82" cy="52" r="4" fill="#3D3A36"/>
+                <circle cx="53" cy="44" r="1.5" fill="white"/><circle cx="83" cy="50" r="1.5" fill="white"/>
+                <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                <text x="95" y="30" fill="white" font-size="11" font-weight="bold">?</text>
+                <text x="25" y="35" fill="white" font-size="9" font-weight="bold">!</text>
+            </svg>
+        </div>
+        <div class="error-content">
+            <div class="error-box wrong">
+                <div class="label">❌ Lo que suele pasar</div>
+                <p>"Usamos los clientes de la DEX que ya tiene mejor data porque es más fácil armar el grupo." El piloto corre sobre los clientes más ordenados, con mejor cobertura y mayor historial.</p>
+            </div>
+            <div class="error-box right">
+                <div class="label">✓ Por qué invalida el resultado</div>
+                <p>Esos clientes ya tienen comportamiento atípico. Cuando escales, el 70% de tu base no se parecerá a ellos. <strong>El piloto "funcionó" en los mejores — no en los reales.</strong></p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══ 7. RIESGOS OPERATIVOS (nuevo) ══ -->
+    <div class="risks-section">
+        <div class="risks-header">
+            <div class="example-icon">🔴</div>
+            <div class="risks-title">Riesgos operativos que invalidan el piloto</div>
+            <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="65" cy="95" rx="34" ry="29" fill="#E85D4C"/>
+                <ellipse cx="50" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(25 50 82)"/>
+                <ellipse cx="52" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(25 52 84)"/>
+                <ellipse cx="80" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(-25 80 82)"/>
+                <ellipse cx="78" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(-25 78 84)"/>
+                <ellipse cx="65" cy="100" rx="21" ry="18" fill="#FFF0EE"/>
+                <circle cx="55" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="65" cy="90" r="3" fill="#E85D4C" fill-opacity="0.5"/><circle cx="75" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="106" r="4" fill="#D4A853"/>
+                <ellipse cx="65" cy="50" rx="30" ry="25" fill="#E85D4C"/>
+                <path d="M40 35L36 21L50 33Z" fill="#C94A3A"/><path d="M90 35L94 21L80 33Z" fill="#C94A3A"/>
+                <circle cx="50" cy="48" r="11" fill="white"/><circle cx="80" cy="48" r="11" fill="white"/>
+                <circle cx="52" cy="50" r="5" fill="#3D3A36"/><circle cx="82" cy="50" r="5" fill="#3D3A36"/>
+                <circle cx="53" cy="48" r="1.5" fill="white"/><circle cx="83" cy="48" r="1.5" fill="white"/>
+                <path d="M40 40C44 38 50 38 56 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                <path d="M90 40C86 38 80 38 74 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                <path d="M55 68C55 68 65 62 75 68" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+            </svg>
+        </div>
+        <div class="risks-grid">
+            <div class="risk-card">
+                <span class="risk-tag alto">Riesgo alto</span>
+                <strong>Contaminación entre grupos</strong>
+                <p>Un vendedor aplica la promoción a clientes del grupo control "para ayudar". Los grupos ya no son comparables y el resultado pierde validez.</p>
+                <p class="fix">→ Asignar grupos por zona geográfica o por vendedor, no por cliente individual.</p>
+            </div>
+            <div class="risk-card">
+                <span class="risk-tag alto">Riesgo alto</span>
+                <strong>Ejecución inconsistente en campo</strong>
+                <p>El piloto se aplica bien en algunas rutas y mal en otras. El resultado promedio no refleja ni el mejor ni el peor escenario real.</p>
+                <p class="fix">→ Definir un protocolo de ejecución y verificar adherencia en la primera semana.</p>
+            </div>
+            <div class="risk-card">
+                <span class="risk-tag medio">Riesgo medio</span>
+                <strong>Ventana demasiado corta</strong>
+                <p>El piloto corre 1 semana en un período atípico (feriado, fin de mes, campaña). La señal captura el contexto, no la iniciativa.</p>
+                <p class="fix">→ Correr mínimo 2–3 ciclos normales de compra del cliente objetivo.</p>
+            </div>
+            <div class="risk-card">
+                <span class="risk-tag medio">Riesgo medio</span>
+                <strong>Datos que llegan tarde o incompletos</strong>
+                <p>Al cerrar el piloto, parte de las transacciones aún no están registradas. El análisis se hace sobre data parcial y subestima el efecto.</p>
+                <p class="fix">→ Definir la fecha de corte de datos con el equipo de sistemas antes de arrancar.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══ 8. SEÑALES TEMPRANAS + CÓMO ESCALAR (nuevo) ══ -->
+    <div class="scale-section">
+        <div class="scale-header">
+            <div class="example-icon">📈</div>
+            <div class="scale-title">Señales tempranas de valor y cómo escalar</div>
+            <svg width="50" height="58" viewBox="0 0 130 150" fill="none">
+                <ellipse cx="65" cy="105" rx="32" ry="27" fill="#D4A853"/>
+                <ellipse cx="38" cy="100" rx="8" ry="14" fill="#C4983F" transform="rotate(-15 38 100)"/>
+                <ellipse cx="40" cy="98" rx="5" ry="10" fill="#D4A853" transform="rotate(-15 40 98)"/>
+                <ellipse cx="100" cy="78" rx="8" ry="16" fill="#C4983F" transform="rotate(50 100 78)"/>
+                <ellipse cx="97" cy="82" rx="5" ry="11" fill="#D4A853" transform="rotate(50 97 82)"/>
+                <ellipse cx="65" cy="110" rx="19" ry="16" fill="#FDF8EC"/>
+                <circle cx="55" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/><circle cx="65" cy="101" r="3" fill="#D4A853" fill-opacity="0.5"/><circle cx="75" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+                <circle cx="65" cy="115" r="4" fill="#E85D4C"/>
+                <ellipse cx="65" cy="60" rx="28" ry="24" fill="#D4A853"/>
+                <path d="M42 45L38 32L52 43Z" fill="#C4983F"/><path d="M88 45L92 32L78 43Z" fill="#C4983F"/>
+                <circle cx="52" cy="58" r="10" fill="white"/><circle cx="78" cy="58" r="10" fill="white"/>
+                <circle cx="54" cy="60" r="5" fill="#D4A853"/><circle cx="80" cy="60" r="5" fill="#D4A853"/>
+                <circle cx="54" cy="60" r="2" fill="white"/><circle cx="80" cy="60" r="2" fill="white"/>
+                <path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M65 67L62 74L65 72L68 74Z" fill="#C4983F"/>
+                <circle cx="65" cy="12" r="10" fill="white" fill-opacity="0.95"/>
+                <path d="M65 2V7M55 12H60M70 12H75M57 5L60 8M73 5L60 8" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="scale-grid">
+            <div>
+                <span class="scale-col-title signal">🟢 Señales tempranas de valor</span>
+                <div class="scale-item">
+                    <div class="scale-dot signal"></div>
+                    <div class="scale-item-text"><strong>Adopción en la primera semana:</strong> ¿el grupo piloto está respondiendo a la acción? Si la tasa es &lt;10%, hay un problema de ejecución, no de hipótesis.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot signal"></div>
+                    <div class="scale-item-text"><strong>Dirección del indicador antes del cierre:</strong> si a mitad del piloto el delta acción-control ya va en la dirección esperada, es una señal positiva temprana (no concluyente aún).</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot signal"></div>
+                    <div class="scale-item-text"><strong>Feedback cualitativo del canal:</strong> vendedores y promotores detectan fricciones operativas antes que los datos — recoge esa información en las primeras 48–72h.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot signal"></div>
+                    <div class="scale-item-text"><strong>Segmentos con efecto diferenciado:</strong> si el piloto funciona muy bien en canal B y nada en canal A, ya tienes el foco del escalado.</div>
+                </div>
+            </div>
+            <div>
+                <span class="scale-col-title when">📋 Cuándo escalar</span>
+                <div class="scale-item">
+                    <div class="scale-dot when"></div>
+                    <div class="scale-item-text"><strong>Incremento real positivo</strong> sobre el grupo control al cierre de la ventana — no solo "subió" en el grupo piloto.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot when"></div>
+                    <div class="scale-item-text"><strong>ROI positivo incluso en el peor segmento:</strong> si funciona bien en los más difíciles, el escalado será más robusto.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot when"></div>
+                    <div class="scale-item-text"><strong>Ejecución replicable:</strong> el equipo de campo pudo aplicar la acción sin fricciones importantes. Si costó mucho trabajo en 10%, costará más en el 100%.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot when"></div>
+                    <div class="scale-item-text"><strong>Hipótesis validada en el perfil correcto:</strong> el resultado aplica al segmento que concentra la oportunidad — no solo al más fácil de medir.</div>
+                </div>
+            </div>
+            <div>
+                <span class="scale-col-title how">🚀 Cómo escalar bien</span>
+                <div class="scale-item">
+                    <div class="scale-dot how"></div>
+                    <div class="scale-item-text"><strong>Escala gradualmente:</strong> 25% → 50% → 100%, revisando la métrica en cada paso. No pases de 10% a toda la base en un salto.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot how"></div>
+                    <div class="scale-item-text"><strong>Prioriza los segmentos con mayor efecto:</strong> si el piloto mostró que el canal B responde 3x más, el rollout debería empezar ahí.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot how"></div>
+                    <div class="scale-item-text"><strong>Mantén un grupo control pequeño:</strong> al escalar, conserva un ~10% sin la acción para seguir midiendo que el efecto persiste en el tiempo.</div>
+                </div>
+                <div class="scale-item">
+                    <div class="scale-dot how"></div>
+                    <div class="scale-item-text"><strong>Documenta qué cambió al escalar:</strong> nuevas zonas, nuevos vendedores, distinto contexto temporal. Son variables que pueden afectar el resultado.</div>
+                </div>
+            </div>
+        </div>
+        <div class="scale-insight">
+            <span>🎯</span>
+            <div><strong>Regla de oro del escalado:</strong> el piloto te dice si <em>puede</em> funcionar. El rollout gradual te dice si <em>sigue</em> funcionando cuando la ejecución ya no es perfecta y el contexto ya no es el mismo.</div>
+        </div>
+    </div>
+
+
+    <!-- ══ 9. TAKEAWAY ══ -->
+    <div class="takeaway">
+        <svg width="50" height="58" viewBox="0 0 130 150" fill="none">
+            <ellipse cx="65" cy="105" rx="32" ry="27" fill="#D4A853"/>
+            <ellipse cx="38" cy="100" rx="8" ry="14" fill="#C4983F" transform="rotate(-15 38 100)"/>
+            <ellipse cx="40" cy="98" rx="5" ry="10" fill="#D4A853" transform="rotate(-15 40 98)"/>
+            <ellipse cx="100" cy="78" rx="8" ry="16" fill="#C4983F" transform="rotate(50 100 78)"/>
+            <ellipse cx="97" cy="82" rx="5" ry="11" fill="#D4A853" transform="rotate(50 97 82)"/>
+            <ellipse cx="65" cy="110" rx="19" ry="16" fill="#FDF8EC"/>
+            <circle cx="55" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/><circle cx="65" cy="101" r="3" fill="#D4A853" fill-opacity="0.5"/><circle cx="75" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="65" cy="115" r="4" fill="#E85D4C"/>
+            <ellipse cx="65" cy="60" rx="28" ry="24" fill="#D4A853"/>
+            <path d="M42 45L38 32L52 43Z" fill="#C4983F"/><path d="M88 45L92 32L78 43Z" fill="#C4983F"/>
+            <circle cx="52" cy="58" r="10" fill="white"/><circle cx="78" cy="58" r="10" fill="white"/>
+            <circle cx="54" cy="60" r="5" fill="#D4A853"/><circle cx="80" cy="60" r="5" fill="#D4A853"/>
+            <circle cx="54" cy="60" r="2" fill="white"/><circle cx="80" cy="60" r="2" fill="white"/>
+            <path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <path d="M65 67L62 74L65 72L68 74Z" fill="#C4983F"/>
+            <circle cx="65" cy="12" r="10" fill="white" fill-opacity="0.95"/>
+            <path d="M65 2V7M55 12H60M70 12H75M57 5L60 8M73 5L70 8" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="takeaway-text">
+            <strong>Takeaway:</strong> El muestreo es la base del piloto, no un detalle técnico. Un grupo mal elegido invalida el resultado antes de que el experimento arranque. Elige quién entra con el mismo cuidado con el que defines qué vas a medir — <strong>porque si el grupo no es representativo, la señal que obtienes no es del negocio: es de ese grupo.</strong>
+        </div>
+    </div>
+
+
+    <!-- ══ FOOTER ══ -->
+    <footer>
+        <div class="footer-logo">
+            <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="10" fill="url(#fGrad)"/>
+                <circle cx="12" cy="15" r="3" fill="white"/><circle cx="12" cy="20" r="3" fill="white"/><circle cx="12" cy="25" r="3" fill="white"/>
+                <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/><circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                <defs><linearGradient id="fGrad" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient></defs>
+            </svg>
+            <div class="footer-logo-text">
+                <span class="footer-name">Advanced Analytics</span>
+                <span class="footer-tagline">Data Science & ML</span>
+            </div>
+        </div>
+        <div class="footer-tags">
+            <span class="footer-tag">#Muestreo</span>
+            <span class="footer-tag">#RiesgosOperativos</span>
+            <span class="footer-tag">#Escalado</span>
+            <span class="footer-tag">Playbook Vol. 04</span>
+        </div>
+    </footer>
+
+</div>
+</body>
+</html>
