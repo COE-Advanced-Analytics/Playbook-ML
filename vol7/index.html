@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cómo leer una curva de lift | Playbook Analytics VOL. 7</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-cream: #FDFBF7;
+            --bg-warm: #F8F5F0;
+            --bg-card: #FFFFFF;
+            --text-primary: #3D3A36;
+            --text-secondary: #4a4a5a;
+            --text-muted: #7a7a8a;
+            --accent-coral: #E85D4C;
+            --accent-coral-dark: #C94A3A;
+            --accent-coral-light: #FFF0EE;
+            --accent-teal: #2D9C9C;
+            --accent-teal-dark: #238080;
+            --accent-teal-light: #E8F6F6;
+            --accent-gold: #D4A853;
+            --accent-gold-dark: #C4983F;
+            --accent-gold-light: #FDF8EC;
+            --dark-warm: #3D3A36;
+            --border-light: #E8E4DD;
+            --shadow-sm: 0 2px 8px rgba(26, 26, 46, 0.06);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 0; }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        .web-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* BARRA STICKY SUPERIOR */
+        .back-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(61, 58, 54, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 0 0 12px 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            text-decoration: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .back-btn svg { width: 14px; height: 14px; }
+
+        .back-bar-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--bg-warm) 0%, var(--bg-cream) 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            right: -20px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--accent-coral-light) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-avatar { flex-shrink: 0; }
+        .header-text { flex: 1; position: relative; z-index: 1; }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .area-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .area-logo svg { width: 30px; height: 30px; }
+        
+        .area-logo-text { display: flex; flex-direction: column; gap: 1px; }
+        
+        .logo-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .logo-tagline {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent-coral);
+            text-transform: uppercase;
+        }
+        .badge-dot { width: 6px; height: 6px; background: var(--accent-coral); border-radius: 50%; }
+        .badge-vol { background: var(--accent-coral); color: white; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        h1 .highlight { color: var(--accent-coral); }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            max-width: 450px;
+            line-height: 1.5;
+        }
+
+        /* SECCIÓN PROBLEMA */
+        .problem-section {
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent-gold);
+            border-radius: 0 14px 14px 0;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .problem-content h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-coral);
+            margin-bottom: 6px;
+        }
+
+        .problem-content p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .problem-content p strong { color: var(--text-primary); }
+
+        .problem-section svg { width: 40px; height: 40px; flex-shrink: 0; }
+
+        /* GRID 2 COLUMNAS */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .grid-title {
+            grid-column: 1 / -1;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: var(--shadow-sm);
+            border-left: 3px solid var(--accent-teal);
+        }
+
+        .card.negative {
+            border-left-color: var(--accent-coral);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-teal);
+            flex: 1;
+        }
+
+        .card.negative .card-title {
+            color: var(--accent-coral);
+        }
+
+        .item-list {
+            list-style: none;
+        }
+
+        .item-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .list-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 8px;
+            margin-top: 1px;
+            font-weight: 700;
+        }
+
+        .list-icon.positive { background: var(--accent-teal-light); color: var(--accent-teal); }
+        .list-icon.negative { background: var(--accent-coral-light); color: var(--accent-coral); }
+
+        .list-text {
+            color: var(--text-secondary);
+        }
+
+        .list-text strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* SECCIÓN EJEMPLO */
+        .example-section {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .example-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .example-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-coral);
+            flex: 1;
+        }
+
+        .chart-container {
+            background: var(--bg-cream);
+            border-radius: 10px;
+            padding: 20px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: center;
+            border: 1px solid var(--border-light);
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .case-card {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+        }
+
+        .case-card.weak {
+            border-left: 3px solid var(--accent-coral);
+            background: var(--accent-coral-light);
+        }
+
+        .case-card.strong {
+            border-left: 3px solid var(--accent-teal);
+            background: var(--accent-teal-light);
+        }
+
+        .case-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .case-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            color: white;
+            background: var(--accent-coral);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .case-card.strong .case-number {
+            background: var(--accent-teal);
+        }
+
+        .case-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-coral);
+        }
+
+        .case-card.strong .case-label {
+            color: var(--accent-teal);
+        }
+
+        .case-desc {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .case-insight {
+            font-size: 9px;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding-top: 6px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* SECCIÓN PASOS */
+        .steps-section {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .steps-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .step {
+            background: var(--bg-cream);
+            border-radius: 8px;
+            padding: 10px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .step-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 3px;
+        }
+
+        .step-content {
+            font-size: 10px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* SECCIÓN ERROR */
+        .error-section {
+            background: var(--accent-coral-light);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--accent-coral);
+        }
+
+        .error-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .error-icon { font-size: 16px; }
+
+        .error-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-coral);
+            flex: 1;
+        }
+
+        .error-header svg { width: 28px; height: 28px; flex-shrink: 0; }
+
+        .error-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .error-box {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 11px;
+            border-left: 3px solid var(--accent-coral);
+        }
+
+        .error-box.right {
+            border-left-color: var(--accent-teal);
+        }
+
+        .error-box .label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .error-box p {
+            font-size: 9px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .error-box p strong {
+            color: var(--text-primary);
+        }
+
+        /* TAKEAWAY */
+        .takeaway {
+            background: var(--dark-warm);
+            color: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .takeaway::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            right: -40px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(212, 168, 83, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .takeaway svg {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .takeaway-text {
+            font-size: 11px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        .takeaway-text strong {
+            color: var(--accent-gold);
+        }
+
+        /* FOOTER */
+        footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-light);
+            font-size: 10px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-logo svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .footer-logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .footer-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 10px;
+        }
+
+        .footer-tagline {
+            color: var(--text-muted);
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .footer-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer-tag {
+            background: var(--bg-warm);
+            color: var(--text-secondary);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
+            .back-bar { display: none; }
+            .web-wrapper { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="web-wrapper">
+
+    <!-- BARRA STICKY SUPERIOR -->
+    <div class="back-bar">
+        <a href="../" class="back-btn">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Todos los Playbooks
+        </a>
+        <span class="back-bar-label">Playbook VOL. 7</span>
+    </div>
+
+    <!-- HEADER / HERO -->
+    <header>
+        <div class="header-main">
+            <div class="header-avatar">
+                <svg width="50" height="58" viewBox="0 0 130 140" fill="none">
+                    <ellipse cx="65" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                    <ellipse cx="32" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(-40 32 72)"/>
+                    <ellipse cx="35" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(-40 35 75)"/>
+                    <ellipse cx="98" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(40 98 72)"/>
+                    <ellipse cx="95" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(40 95 75)"/>
+                    <ellipse cx="65" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                    <circle cx="55" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                    <circle cx="65" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                    <circle cx="75" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                    <circle cx="65" cy="105" r="4" fill="#D4A853"/>
+                    <ellipse cx="65" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                    <path d="M40 35L36 22L50 33Z" fill="#C94A3A"/>
+                    <path d="M90 35L94 22L80 33Z" fill="#C94A3A"/>
+                    <circle cx="50" cy="48" r="10" fill="white"/><circle cx="80" cy="48" r="10" fill="white"/>
+                    <circle cx="50" cy="48" r="6" fill="white"/><circle cx="80" cy="48" r="6" fill="white"/>
+                    <circle cx="50" cy="48" r="3" fill="#3D3A36"/><circle cx="80" cy="48" r="3" fill="#3D3A36"/>
+                    <circle cx="51" cy="47" r="1.5" fill="white"/><circle cx="81" cy="47" r="1.5" fill="white"/>
+                    <circle cx="50" cy="44" r="8" fill="none" stroke="#D4A853" stroke-width="2"/>
+                    <circle cx="80" cy="44" r="8" fill="none" stroke="#D4A853" stroke-width="2"/>
+                    <line x1="58" y1="44" x2="72" y2="44" stroke="#D4A853" stroke-width="2"/>
+                    <circle cx="55" cy="100" r="2.5" fill="#E85D4C" opacity="0.6"/>
+                    <circle cx="65" cy="95" r="2.5" fill="#E85D4C" opacity="0.6"/>
+                    <circle cx="75" cy="100" r="2.5" fill="#E85D4C" opacity="0.6"/>
+                    <line x1="55" y1="100" x2="65" y2="95" stroke="#E85D4C" stroke-width="1.5" opacity="0.4"/>
+                    <line x1="65" y1="95" x2="75" y2="100" stroke="#E85D4C" stroke-width="1.5" opacity="0.4"/>
+                    <path d="M55 68C55 68 60 70 65 68C70 70 75 68 75 68" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M65 62L63 68L65 66L67 68Z" fill="#D4A853"/>
+                </svg>
+            </div>
+            <div class="header-text">
+                <div class="header-top">
+                    <div class="area-logo">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect width="40" height="40" rx="10" fill="url(#hGrad)"/>
+                            <circle cx="12" cy="15" r="3" fill="white"/>
+                            <circle cx="12" cy="20" r="3" fill="white"/>
+                            <circle cx="12" cy="25" r="3" fill="white"/>
+                            <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                            <defs><linearGradient id="hGrad" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient></defs>
+                        </svg>
+                        <div class="area-logo-text">
+                            <span class="logo-name">Advanced Analytics</span>
+                            <span class="logo-tagline">Data Science & ML</span>
+                        </div>
+                    </div>
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Playbook
+                        <span class="badge-vol">VOL. 7</span>
+                    </div>
+                </div>
+                <h1>Cómo <span class="highlight">leer</span> una curva de <span class="highlight">lift</span></h1>
+                <p class="subtitle">Guía para interpretar si tu modelo prioriza mejor que el azar, dónde focalizar esfuerzos y cuándo su uso es real.</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECCIÓN PROBLEMA -->
+    <div class="problem-section">
+        <svg width="40" height="40" viewBox="0 0 130 140" fill="none">
+            <ellipse cx="65" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+            <ellipse cx="32" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(-40 32 72)"/>
+            <ellipse cx="35" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(-40 35 75)"/>
+            <ellipse cx="98" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(40 98 72)"/>
+            <ellipse cx="95" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(40 95 75)"/>
+            <ellipse cx="65" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+            <circle cx="55" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+            <circle cx="65" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+            <circle cx="75" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+            <circle cx="65" cy="105" r="4" fill="#D4A853"/>
+            <ellipse cx="65" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+            <path d="M40 35L36 22L50 33Z" fill="#C94A3A"/>
+            <path d="M90 35L94 22L80 33Z" fill="#C94A3A"/>
+            <circle cx="50" cy="48" r="10" fill="white"/><circle cx="80" cy="48" r="10" fill="white"/>
+            <circle cx="50" cy="45" r="5" fill="#3D3A36"/><circle cx="80" cy="51" r="5" fill="#3D3A36"/>
+            <circle cx="51" cy="44" r="1.5" fill="white"/><circle cx="81" cy="50" r="1.5" fill="white"/>
+            <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+            <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+        </svg>
+        <div class="problem-content">
+            <h2>El problema</h2>
+            <p>Ver una curva de lift y no saber qué buscar es común. <strong>No alcanza que suba.</strong> Necesitas entender separación contra azar, dónde se concentra valor, y si eso es decisivo en negocio. Esta guía te enseña a leer el gráfico como debe ser.</p>
+        </div>
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="main-grid">
+        <div class="grid-title">Qué información aporta la curva versus qué no debes concluir por sí sola</div>
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Lo que te ayuda a entender</div>
+            </div>
+            <ul class="item-list">
+                <li><span class="list-icon positive">✓</span><span class="list-text">Capacidad de <strong>priorización:</strong> ordena mejor que el azar</span></li>
+                <li><span class="list-icon positive">✓</span><span class="list-text">Concentración <strong>temprana:</strong> dónde se agrupan positivos</span></li>
+                <li><span class="list-icon positive">✓</span><span class="list-text">Ventaja <strong>accionable:</strong> qué ahorro de recursos permite</span></li>
+                <li><span class="list-icon positive">✓</span><span class="list-text">Utilidad para <strong>targeting:</strong> cómo priorizar contactos</span></li>
+                <li><span class="list-icon positive">✓</span><span class="list-text">Comparación <strong>relativa:</strong> cuál modelo rankea mejor</span></li>
+            </ul>
+        </div>
+
+        <div class="card negative">
+            <div class="card-header">
+                <div class="card-title">Lo que NO debes concluir por sí sola</div>
+            </div>
+            <ul class="item-list">
+                <li><span class="list-icon negative">✗</span><span class="list-text">No reemplaza <strong>calibración:</strong> fallan brier score, logloss</span></li>
+                <li><span class="list-icon negative">✗</span><span class="list-text">No define <strong>umbral:</strong> dónde cortar en negocio</span></li>
+                <li><span class="list-icon negative">✗</span><span class="list-text">No cuantifica <strong>ROI:</strong> sin datos de costo/intervención</span></li>
+                <li><span class="list-icon negative">✗</span><span class="list-text">No prueba <strong>causalidad:</strong> predice, no causa</span></li>
+                <li><span class="list-icon negative">✗</span><span class="list-text">No valida <strong>producción:</strong> requiere testing real</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- SECCIÓN GRÁFICO PRINCIPAL -->
+    <div class="example-section">
+        <div class="example-header">
+            <svg width="18" height="18" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="65" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(-40 32 72)"/>
+                <ellipse cx="35" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(-40 35 75)"/>
+                <ellipse cx="98" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(40 98 72)"/>
+                <ellipse cx="95" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(40 95 75)"/>
+                <ellipse cx="65" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="55" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="75" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="65" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M40 35L36 22L50 33Z" fill="#C94A3A"/>
+                <path d="M90 35L94 22L80 33Z" fill="#C94A3A"/>
+                <circle cx="50" cy="48" r="10" fill="white"/><circle cx="80" cy="48" r="10" fill="white"/>
+                <circle cx="50" cy="48" r="3" fill="#3D3A36"/><circle cx="80" cy="48" r="3" fill="#3D3A36"/>
+                <circle cx="51" cy="47" r="1.5" fill="white"/><circle cx="81" cy="47" r="1.5" fill="white"/>
+                <path d="M53 64C53 64 60 67 67 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M60 57L57 63L60 61L63 63Z" fill="#D4A853"/>
+            </svg>
+            <div class="example-title">Qué es lift: un ejemplo real</div>
+        </div>
+
+        <!-- EXPLICACIÓN SIMPLE DE QUÉ ES LIFT -->
+        <div style="background: var(--bg-warm); border-radius: 10px; padding: 12px; margin-bottom: 14px; border-left: 3px solid var(--accent-gold);">
+            <p style="font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">
+                <strong style="color: var(--text-primary);">Lift = cuántas veces mejor es tu modelo que seleccionar al azar.</strong>
+            </p>
+            <p style="font-size: 10px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px;">
+                <strong>Ejemplo concreto:</strong> Si contactas al 20% de tus clientes sin modelo, encuentras 20 positivos. Con tu modelo en ese mismo 20%, encuentras 36 positivos. Eso es <strong style="color: var(--accent-teal);">lift = 1.8x</strong> (36 ÷ 20).
+            </p>
+            <p style="font-size: 10px; color: var(--text-secondary); line-height: 1.6;">
+                <strong>Qué significa:</strong> Tu modelo es 1.8 veces más eficiente que elegir gente al azar. Con menos contactos, captas más positivos.
+            </p>
+        </div>
+
+        <div class="example-title" style="margin-top: 12px; margin-bottom: 12px;">Cómo se ve en un gráfico: dos modelos comparados</div>
+
+        <div class="chart-container">
+            <svg width="360" height="200" viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#FDFBF7" stop-opacity="1"/>
+                        <stop offset="100%" stop-color="#F8F5F0" stop-opacity="0.5"/>
+                    </linearGradient>
+                </defs>
+                <rect width="360" height="200" fill="url(#bgGrad)"/>
+                
+                <!-- Fondo suave para zona temprana DENTRO del gráfico -->
+                <rect x="50" y="35" width="87" height="105" fill="#E8F6F6" opacity="0.3" rx="2"/>
+                
+                <!-- ETIQUETA "Lift temprano" FUERA Y ARRIBA, bien visible -->
+                <text x="50" y="25" font-size="11" fill="#2D9C9C" font-weight="700">← Lift temprano</text>
+                <text x="50" y="38" font-size="8" fill="#2D9C9C" opacity="0.7">(primeros 20-30%)</text>
+
+                <!-- Líneas de grid horizontales suaves -->
+                <line x1="50" y1="155" x2="340" y2="155" stroke="#E8E4DD" stroke-width="0.8" opacity="0.4"/>
+                <line x1="50" y1="120" x2="340" y2="120" stroke="#E8E4DD" stroke-width="0.8" opacity="0.25"/>
+                <line x1="50" y1="85" x2="340" y2="85" stroke="#E8E4DD" stroke-width="0.8" opacity="0.25"/>
+                <line x1="50" y1="50" x2="340" y2="50" stroke="#E8E4DD" stroke-width="0.8" opacity="0.25"/>
+                
+                <!-- Ejes principales -->
+                <line x1="50" y1="155" x2="340" y2="155" stroke="#3D3A36" stroke-width="2"/>
+                <line x1="50" y1="155" x2="50" y2="35" stroke="#3D3A36" stroke-width="2"/>
+                
+                <!-- Etiquetas X: deciles -->
+                <text x="50" y="172" text-anchor="middle" font-size="10" fill="#7a7a8a" font-weight="500">0%</text>
+                <text x="137" y="172" text-anchor="middle" font-size="10" fill="#7a7a8a" font-weight="500">20%</text>
+                <text x="224" y="172" text-anchor="middle" font-size="10" fill="#7a7a8a" font-weight="500">50%</text>
+                <text x="340" y="172" text-anchor="middle" font-size="10" fill="#7a7a8a" font-weight="500">100%</text>
+                <text x="195" y="188" text-anchor="middle" font-size="10" font-weight="600" fill="#3D3A36">% de población (acumulado)</text>
+                
+                <!-- Etiquetas Y: lift levels (escala más ajustada: 1.0 a 2.5) -->
+                <text x="38" y="158" text-anchor="end" font-size="9" fill="#7a7a8a" font-weight="500">1.0x</text>
+                <text x="38" y="123" text-anchor="end" font-size="9" fill="#7a7a8a" font-weight="500">1.4x</text>
+                <text x="38" y="88" text-anchor="end" font-size="9" fill="#7a7a8a" font-weight="500">1.8x</text>
+                <text x="38" y="53" text-anchor="end" font-size="9" fill="#7a7a8a" font-weight="500">2.2x</text>
+                <text x="12" y="95" font-size="10" font-weight="600" fill="#3D3A36" transform="rotate(-90 12 95)" text-anchor="middle">Lift acumulado</text>
+                
+                <!-- BASELINE ALEATORIO (línea punteada en y=155, nivel 1.0x) -->
+                <line x1="50" y1="155" x2="340" y2="155" stroke="#8b8b7a" stroke-width="2.2" stroke-dasharray="4,3" opacity="0.92"/>
+                <text x="344" y="151" font-size="8" fill="#8b8b7a" font-weight="700" opacity="0.9">Azar</text>
+                
+                <!-- MODELO DÉBIL (Coral) - apenas encima del baseline, muy sutil -->
+                <path d="M 50 152 Q 100 149 137 148 Q 180 147 224 149 Q 280 151 340 153" 
+                      stroke="#E85D4C" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                
+                <!-- MODELO FUERTE (Teal) - curva natural, no extrema, pico moderado -->
+                <path d="M 50 155 Q 85 128 137 105 Q 180 88 224 105 Q 280 130 340 148" 
+                      stroke="#2D9C9C" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                
+                <!-- LEYENDA clara y compacta -->
+                <rect x="235" y="35" width="100" height="68" fill="white" stroke="#E8E4DD" stroke-width="1.5" rx="4"/>
+                <text x="245" y="48" font-size="10" font-weight="700" fill="#3D3A36">Leyenda</text>
+                
+                <line x1="245" y1="56" x2="263" y2="56" stroke="#2D9C9C" stroke-width="2.2"/>
+                <text x="268" y="59" font-size="9" fill="#3D3A36">Modelo fuerte</text>
+                
+                <line x1="245" y1="69" x2="263" y2="69" stroke="#E85D4C" stroke-width="2.2"/>
+                <text x="268" y="72" font-size="9" fill="#3D3A36">Modelo débil</text>
+                
+                <line x1="245" y1="82" x2="263" y2="82" stroke="#8b8b7a" stroke-width="2" stroke-dasharray="3,2"/>
+                <text x="268" y="85" font-size="9" fill="#3D3A36">Baseline</text>
+            </svg>
+        </div>
+
+        <div class="cases-grid">
+            <div class="case-card weak">
+                <div class="case-header">
+                    <span class="case-number">A</span>
+                    <span class="case-label">Modelo débil: prioriza apenas mejor que azar</span>
+                </div>
+                <div class="case-desc">Lift temprano es bajo. Apenas se separa de 1.0x. Acumula poco valor en los primeros % de población.</div>
+                <div class="case-insight">🚨 Utilidad limitada: no concentra positivos donde importa.</div>
+            </div>
+
+            <div class="case-card strong">
+                <div class="case-header">
+                    <span class="case-number">B</span>
+                    <span class="case-label">Modelo fuerte: concentra valor temprano</span>
+                </div>
+                <div class="case-desc">Lift temprano es alto (2.0x+). Clara separación del azar. Converge gradualmente hacia 1.0x al final.</div>
+                <div class="case-insight">✓ Real utilidad: permite decidir a quién contactar primero.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN PASOS -->
+    <div class="steps-section">
+        <div class="steps-title">📖 Cómo leerla paso a paso</div>
+        <div class="steps-grid">
+            <div class="step">
+                <div class="step-number">1. Ubica el baseline</div>
+                <div class="step-content">Línea punteada. Si tu curva está por encima, hay señal real. Si está pegada, poco te aporta.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2. Mira los primeros %</div>
+                <div class="step-content">Primeros 10%-20%. Ahí ve si el lift es alto (diferencia vs azar). Eso es lo que importa para priorizar.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3. Identifica convergencia</div>
+                <div class="step-content">Dónde la curva empieza a perder fuerza. Es el límite de su utilidad práctica.</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4. Define tramo accionable</div>
+                <div class="step-content">Cuánto % necesitas contactar para que valga la inversión en tu negocio. Es tu decisión, no del gráfico.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN ERROR COMÚN -->
+    <div class="error-section">
+        <div class="error-header">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">Error común: toda curva ascendente ya es suficiente</div>
+            <svg width="28" height="28" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="65" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(-40 32 72)"/>
+                <ellipse cx="35" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(-40 35 75)"/>
+                <ellipse cx="98" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(40 98 72)"/>
+                <ellipse cx="95" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(40 95 75)"/>
+                <ellipse cx="65" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="55" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="75" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="65" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M40 35L36 22L50 33Z" fill="#C94A3A"/>
+                <path d="M90 35L94 22L80 33Z" fill="#C94A3A"/>
+                <circle cx="50" cy="48" r="10" fill="white"/><circle cx="80" cy="48" r="10" fill="white"/>
+                <circle cx="52" cy="46" r="4" fill="#3D3A36"/><circle cx="82" cy="52" r="4" fill="#3D3A36"/>
+                <circle cx="53" cy="44" r="1.5" fill="white"/><circle cx="83" cy="50" r="1.5" fill="white"/>
+                <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                <text x="95" y="30" fill="white" font-size="10" font-weight="bold">?</text>
+                <text x="25" y="35" fill="white" font-size="8" font-weight="bold">!</text>
+            </svg>
+        </div>
+        <div class="error-content">
+            <div class="error-box">
+                <div class="label">❌ Lo que muchos dicen</div>
+                <p>"Sube, funciona" o "Si llega alto al final, está bien" o "Cualquier curva por encima de azar ya sirve".</p>
+            </div>
+            <div class="error-box right">
+                <div class="label">✓ La verdad</div>
+                <p>Necesitas <strong>lift temprano alto</strong>. Una curva plana sin separación inicial no te ayuda a priorizar. Convergencia lenta es la meta, no la curva entera.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAKEAWAY FINAL -->
+    <div class="takeaway">
+        <svg width="40" height="40" viewBox="0 0 130 150" fill="none">
+            <ellipse cx="65" cy="105" rx="32" ry="27" fill="#D4A853"/>
+            <ellipse cx="38" cy="100" rx="8" ry="14" fill="#C4983F" transform="rotate(-15 38 100)"/>
+            <ellipse cx="40" cy="98" rx="5" ry="10" fill="#D4A853" transform="rotate(-15 40 98)"/>
+            <ellipse cx="100" cy="78" rx="8" ry="16" fill="#C4983F" transform="rotate(50 100 78)"/>
+            <ellipse cx="97" cy="82" rx="5" ry="11" fill="#D4A853" transform="rotate(50 97 82)"/>
+            <ellipse cx="65" cy="110" rx="19" ry="16" fill="#FDF8EC"/>
+            <circle cx="55" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="65" cy="101" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="75" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="65" cy="115" r="4" fill="#E85D4C"/>
+            <ellipse cx="65" cy="60" rx="28" ry="24" fill="#D4A853"/>
+            <path d="M42 45L38 32L52 43Z" fill="#C4983F"/>
+            <path d="M88 45L92 32L78 43Z" fill="#C4983F"/>
+            <circle cx="52" cy="58" r="10" fill="white"/><circle cx="78" cy="58" r="10" fill="white"/>
+            <circle cx="54" cy="60" r="5" fill="#D4A853"/><circle cx="80" cy="60" r="5" fill="#D4A853"/>
+            <circle cx="54" cy="60" r="2" fill="white"/><circle cx="80" cy="60" r="2" fill="white"/>
+            <path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <path d="M65 67L62 74L65 72L68 74Z" fill="#C4983F"/>
+            <circle cx="65" cy="12" r="10" fill="white" fill-opacity="0.95"/>
+            <path d="M65 2V7M55 12H60M70 12H75M57 5L60 8M73 5L70 8" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="takeaway-text">
+            <strong>Takeaway:</strong> La curva de lift responde una pregunta: ¿mi modelo ordena mejor a quién contactar? Si el lift temprano es débil, la respuesta es no, y casi no te sirve para priorizar. Si es fuerte, tienes vía abierta. El resto es contexto operacional.
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-logo">
+            <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="10" fill="url(#fGrad)"/>
+                <circle cx="12" cy="15" r="3" fill="white"/>
+                <circle cx="12" cy="20" r="3" fill="white"/>
+                <circle cx="12" cy="25" r="3" fill="white"/>
+                <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                <defs><linearGradient id="fGrad" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient></defs>
+            </svg>
+            <div class="footer-logo-text">
+                <span class="footer-name">Advanced Analytics</span>
+                <span class="footer-tagline">Data Science & ML</span>
+            </div>
+        </div>
+        <div class="footer-tags">
+            <span class="footer-tag">Model Evaluation</span>
+            <span class="footer-tag">Lift Curve</span>
+            <span class="footer-tag">Priorización</span>
+            <span class="footer-tag">Targeting</span>
+            <span class="footer-tag">Playbook VOL. 7</span>
+        </div>
+    </footer>
+
+    </div>
+</body>
+</html>
