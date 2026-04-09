@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch vs Near Real-Time | Playbook Analytics Vol. 9</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-cream: #FDFBF7;
+            --bg-warm: #F8F5F0;
+            --bg-card: #FFFFFF;
+            --text-primary: #3D3A36;
+            --text-secondary: #4a4a5a;
+            --text-muted: #7a7a8a;
+            --accent-coral: #E85D4C;
+            --accent-coral-dark: #C94A3A;
+            --accent-coral-light: #FFF0EE;
+            --accent-teal: #2D9C9C;
+            --accent-teal-dark: #238080;
+            --accent-teal-light: #E8F6F6;
+            --accent-gold: #D4A853;
+            --accent-gold-dark: #C4983F;
+            --accent-gold-light: #FDF8EC;
+            --dark-warm: #3D3A36;
+            --border-light: #E8E4DD;
+            --shadow-sm: 0 2px 8px rgba(26, 26, 46, 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--bg-warm) 0%, var(--bg-cream) 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            bottom: -40px; right: -20px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, var(--accent-teal-light) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-main { display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; }
+        .header-avatar { flex-shrink: 0; }
+        .header-text { flex: 1; position: relative; z-index: 1; }
+
+        .header-top {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .area-logo { display: flex; align-items: center; gap: 8px; }
+        .area-logo svg { width: 30px; height: 30px; }
+        .logo-name { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-primary); display: block; }
+        .logo-tagline { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+
+        .badge {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            padding: 4px 12px; border-radius: 100px;
+            font-size: 10px; font-weight: 600; color: var(--accent-teal); text-transform: uppercase;
+        }
+        .badge-dot { width: 6px; height: 6px; background: var(--accent-teal); border-radius: 50%; }
+        .badge-vol { background: var(--accent-teal); color: white; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; line-height: 1.2; color: var(--text-primary); margin-bottom: 8px; }
+        h1 .highlight { color: var(--accent-teal); }
+        .subtitle { font-size: 12px; color: var(--text-muted); max-width: 400px; }
+
+        /* PROBLEMA */
+        .problem-section {
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent-gold);
+            border-radius: 0 14px 14px 0;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .problem-content h2 { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent-coral); margin-bottom: 6px; }
+        .problem-content p { font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+        .problem-content p strong { color: var(--text-primary); }
+
+        /* GRID PRINCIPAL */
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+
+        .card { background: var(--bg-card); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .card-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .card-icon.positive { background: var(--accent-teal-light); }
+        .card-icon.negative { background: var(--accent-coral-light); }
+        .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; flex: 1; }
+        .card-title.positive { color: var(--accent-teal); }
+        .card-title.negative { color: var(--accent-coral); }
+        .card-pixel { margin-left: auto; }
+
+        .item-list { list-style: none; }
+        .item-list li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+        .list-icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 9px; margin-top: 1px; }
+        .list-icon.positive { background: var(--accent-teal-light); color: var(--accent-teal); }
+        .list-icon.negative { background: var(--accent-coral-light); color: var(--accent-coral); }
+        .list-text strong { display: block; font-size: 11px; font-weight: 700; color: var(--text-primary); }
+        .list-text span { display: block; font-size: 9px; color: var(--text-muted); line-height: 1.4; }
+
+        /* CUÁNDO USAR — tabla de decisión */
+        .decision-section {
+            background: var(--bg-card);
+            border-radius: 16px; padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+        .decision-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px; font-weight: 700;
+            color: var(--accent-coral);
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .decision-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .decision-table th {
+            background: var(--bg-warm);
+            padding: 7px 10px;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.4px;
+        }
+        .decision-table th:first-child { border-radius: 8px 0 0 8px; }
+        .decision-table th:last-child { border-radius: 0 8px 8px 0; }
+        .decision-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); vertical-align: middle; }
+        .decision-table tr:last-child td { border-bottom: none; }
+        .decision-table td:first-child { font-weight: 600; color: var(--text-primary); }
+        .tag-batch { background: var(--accent-coral-light); color: var(--accent-coral); padding: 2px 8px; border-radius: 100px; font-size: 9px; font-weight: 700; }
+        .tag-nrt { background: var(--accent-teal-light); color: var(--accent-teal); padding: 2px 8px; border-radius: 100px; font-size: 9px; font-weight: 700; }
+
+        /* EJEMPLO GRÁFICA */
+        .example-section {
+            background: var(--bg-card); border-radius: 16px; padding: 16px;
+            margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light);
+        }
+        .example-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .example-icon { font-size: 16px; }
+        .example-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent-coral); flex: 1; }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+        .chart-box { border-radius: 10px; padding: 12px; }
+        .chart-box.batch-box { border: 1px dashed rgba(232,93,76,0.35); background: var(--accent-coral-light); }
+        .chart-box.nrt-box { border: 2px solid var(--accent-teal); background: var(--accent-teal-light); }
+        .chart-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 700; margin-bottom: 8px; }
+        .chart-box.batch-box .chart-label { color: var(--accent-coral); }
+        .chart-box.nrt-box .chart-label { color: var(--accent-teal); }
+        .chart-sub { font-size: 8.5px; color: var(--text-muted); margin-bottom: 8px; }
+
+        .example-insight {
+            background: var(--accent-gold-light);
+            border-top: 2px solid var(--accent-gold);
+            border-radius: 0 0 8px 8px;
+            padding: 10px 14px;
+            display: flex; align-items: flex-start; gap: 8px;
+            font-size: 10px; color: var(--text-secondary); line-height: 1.5;
+        }
+        .example-insight strong { color: var(--accent-gold); }
+        .example-insight em { color: var(--accent-teal); text-decoration: underline; font-style: normal; }
+
+        /* ERROR COMÚN */
+        .error-section { background: var(--accent-coral-light); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+        .error-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .error-icon { width: 28px; height: 28px; background: var(--accent-coral); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .error-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--accent-coral); flex: 1; }
+        .error-content { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .error-box { background: white; border-radius: 8px; padding: 10px; font-size: 10px; }
+        .error-box .label { font-size: 9px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .error-box.wrong { border: 1px dashed var(--accent-coral); }
+        .error-box.wrong .label { color: var(--accent-coral); }
+        .error-box.right { border: 1px solid var(--accent-teal); }
+        .error-box.right .label { color: var(--accent-teal); }
+        .error-box p { color: var(--text-secondary); line-height: 1.4; }
+
+        /* TAKEAWAY */
+        .takeaway { background: linear-gradient(135deg, var(--dark-warm) 0%, #2a2a3e 100%); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; }
+        .takeaway-text { font-size: 11px; color: rgba(255,255,255,0.85); line-height: 1.6; }
+        .takeaway-text strong { color: var(--accent-gold); font-weight: 700; }
+
+        /* FOOTER */
+        footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border-light); }
+        .footer-logo { display: flex; align-items: center; gap: 8px; }
+        .footer-logo svg { width: 24px; height: 24px; }
+        .footer-logo-text .footer-name { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-primary); display: block; }
+        .footer-logo-text .footer-tagline { font-size: 8px; color: var(--text-muted); display: block; }
+        .footer-tags { display: flex; gap: 6px; }
+        .footer-tag { font-size: 9px; background: var(--bg-warm); padding: 3px 10px; border-radius: 100px; color: var(--text-muted); border: 1px solid var(--border-light); }
+
+        /* WEB WRAPPER */
+        html { background: #f0ede8; }
+        .web-wrapper { max-width: 210mm; margin: 0 auto; padding: 32px 16px; }
+
+        @media (max-width: 800px) {
+            body { width: 100% !important; padding: 16px !important; }
+            .main-grid, .charts-grid, .error-content { grid-template-columns: 1fr !important; }
+            h1 { font-size: 22px !important; }
+            .web-wrapper { padding: 16px 8px; }
+        }
+
+        .back-bar { position: sticky; top: 0; z-index: 100; background: rgba(61,58,54,0.95); backdrop-filter: blur(10px); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; border-radius: 0 0 12px 12px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; color: white; text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 100px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+        .back-btn svg { width: 14px; height: 14px; }
+        .back-bar-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.8px; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .back-bar { display: none; }
+            .web-wrapper { padding: 0; }
+        }
+        ::selection { background: rgba(45,156,156,0.2); color: var(--text-primary); }
+    </style>
+</head>
+<body>
+<div class="web-wrapper">
+
+    <div class="back-bar">
+        <a href="../" class="back-btn">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Todos los Playbooks
+        </a>
+        <span class="back-bar-label">Playbook Vol. 9</span>
+    </div>
+
+
+    <!-- SECCIÓN 1: HEADER -->
+    <header>
+        <div class="header-main">
+            <!-- Pixel: reloj + rayo (batch vs nrt mood) -->
+            <div class="header-avatar">
+                <svg width="95" height="110" viewBox="0 0 130 150" fill="none">
+                    <!-- cuerpo teal -->
+                    <ellipse cx="30" cy="100" rx="10" ry="16" fill="#238080" transform="rotate(10 30 100)"/>
+                    <ellipse cx="32" cy="99" rx="6" ry="12" fill="#1e6f6f" transform="rotate(10 32 99)"/>
+                    <ellipse cx="100" cy="100" rx="10" ry="16" fill="#238080" transform="rotate(-10 100 100)"/>
+                    <ellipse cx="98" cy="99" rx="6" ry="12" fill="#1e6f6f" transform="rotate(-10 98 99)"/>
+                    <ellipse cx="65" cy="100" rx="38" ry="33" fill="#2D9C9C"/>
+                    <ellipse cx="65" cy="105" rx="26" ry="23" fill="#E8F6F6"/>
+                    <circle cx="50" cy="93" r="5" fill="#2D9C9C" fill-opacity="0.7"/>
+                    <circle cx="65" cy="87" r="5" fill="#2D9C9C" fill-opacity="0.7"/>
+                    <circle cx="80" cy="93" r="5" fill="#2D9C9C" fill-opacity="0.7"/>
+                    <circle cx="55" cy="105" r="5" fill="#2D9C9C" fill-opacity="0.5"/>
+                    <circle cx="75" cy="105" r="5" fill="#2D9C9C" fill-opacity="0.5"/>
+                    <circle cx="65" cy="118" r="6" fill="#D4A853"/>
+                    <line x1="50" y1="93" x2="65" y2="87" stroke="#2D9C9C" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="80" y1="93" x2="65" y2="87" stroke="#2D9C9C" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="50" y1="93" x2="55" y2="105" stroke="#2D9C9C" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="80" y1="93" x2="75" y2="105" stroke="#2D9C9C" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="55" y1="105" x2="65" y2="118" stroke="#D4A853" stroke-width="2" stroke-opacity="0.6"/>
+                    <line x1="75" y1="105" x2="65" y2="118" stroke="#D4A853" stroke-width="2" stroke-opacity="0.6"/>
+                    <!-- cabeza -->
+                    <ellipse cx="65" cy="52" rx="33" ry="28" fill="#2D9C9C"/>
+                    <path d="M37 37L32 19L47 32Z" fill="#238080"/>
+                    <path d="M93 37L98 19L83 32Z" fill="#238080"/>
+                    <!-- gafas -->
+                    <circle cx="50" cy="50" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/>
+                    <circle cx="80" cy="50" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/>
+                    <circle cx="52" cy="52" r="6" fill="#3D3A36"/>
+                    <circle cx="82" cy="52" r="6" fill="#3D3A36"/>
+                    <circle cx="54" cy="50" r="2" fill="white"/>
+                    <circle cx="84" cy="50" r="2" fill="white"/>
+                    <path d="M37 50C37 50 42 45 50 45" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M93 50C93 48 88 45 80 45" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="62" y1="50" x2="68" y2="50" stroke="#D4A853" stroke-width="3"/>
+                    <!-- sonrisa -->
+                    <path d="M55 66C55 66 65 74 75 66" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M65 62L61 70L65 68L69 70Z" fill="#D4A853"/>
+                    <!-- reloj en ala derecha — símbolo batch -->
+                    <circle cx="102" cy="72" r="9" fill="white" stroke="#238080" stroke-width="2"/>
+                    <line x1="102" y1="65" x2="102" y2="72" stroke="#E85D4C" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="102" y1="72" x2="108" y2="72" stroke="#E85D4C" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- rayo en ala izq — símbolo nrt -->
+                    <path d="M32 62L26 72H32L27 82L38 68H32L36 58Z" fill="#D4A853"/>
+                    <!-- patas -->
+                    <path d="M50 128L45 138M50 128L50 138M50 128L55 138" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M80 128L75 138M80 128L80 138M80 128L85 138" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <div class="header-text">
+                <div class="header-top">
+                    <div class="area-logo">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect width="40" height="40" rx="10" fill="url(#logoGrad9)"/>
+                            <circle cx="12" cy="15" r="3" fill="white"/>
+                            <circle cx="12" cy="20" r="3" fill="white"/>
+                            <circle cx="12" cy="25" r="3" fill="white"/>
+                            <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                            <defs><linearGradient id="logoGrad9" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#2D9C9C"/><stop offset="1" stop-color="#238080"/></linearGradient></defs>
+                        </svg>
+                        <div>
+                            <span class="logo-name">Advanced Analytics</span>
+                            <span class="logo-tagline">Data Science & ML</span>
+                        </div>
+                    </div>
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Playbook
+                        <span class="badge-vol">Vol. 9</span>
+                    </div>
+                </div>
+                <h1>Batch vs <span class="highlight">Near Real-Time</span>:<br>cuándo importa</h1>
+                <p class="subtitle">Dos formas de procesar datos, dos velocidades distintas — y una sola pregunta: ¿cuál necesita tu caso de negocio?</p>
+
+                <!-- Mini definiciones -->
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                    <div style="flex:1;background:var(--accent-coral-light);border-left:3px solid var(--accent-coral);border-radius:0 8px 8px 0;padding:7px 10px;">
+                        <div style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:var(--accent-coral);margin-bottom:2px;">⏰ Batch</div>
+                        <div style="font-size:9.5px;color:var(--text-secondary);line-height:1.4;">Acumula datos durante un período y los procesa todos juntos en bloque — típicamente cada noche o cada hora.</div>
+                    </div>
+                    <div style="flex:1;background:var(--accent-teal-light);border-left:3px solid var(--accent-teal);border-radius:0 8px 8px 0;padding:7px 10px;">
+                        <div style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:var(--accent-teal);margin-bottom:2px;">⚡ Near Real-Time</div>
+                        <div style="font-size:9.5px;color:var(--text-secondary);line-height:1.4;">Procesa cada evento en el momento que ocurre o con segundos de retraso — el sistema reacciona casi al instante.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- SECCIÓN 2: EL PROBLEMA -->
+    <div class="problem-section">
+        <!-- Pixel: Pensando -->
+        <svg width="46" height="53" viewBox="0 0 120 140" fill="none">
+            <ellipse cx="60" cy="95" rx="36" ry="31" fill="#2D9C9C"/>
+            <ellipse cx="32" cy="70" rx="9" ry="16" fill="#238080" transform="rotate(-30 32 70)"/>
+            <ellipse cx="35" cy="72" rx="6" ry="11" fill="#2D9C9C" transform="rotate(-30 35 72)"/>
+            <ellipse cx="92" cy="88" rx="9" ry="15" fill="#238080" transform="rotate(15 92 88)"/>
+            <ellipse cx="90" cy="86" rx="6" ry="11" fill="#2D9C9C" transform="rotate(15 90 86)"/>
+            <ellipse cx="60" cy="100" rx="22" ry="19" fill="#E8F6F6"/>
+            <circle cx="50" cy="92" r="4" fill="#2D9C9C" fill-opacity="0.5"/>
+            <circle cx="60" cy="87" r="4" fill="#2D9C9C" fill-opacity="0.5"/>
+            <circle cx="70" cy="92" r="4" fill="#2D9C9C" fill-opacity="0.5"/>
+            <circle cx="60" cy="106" r="5" fill="#D4A853"/>
+            <ellipse cx="60" cy="50" rx="32" ry="27" fill="#2D9C9C"/>
+            <path d="M33 35L29 19L43 32Z" fill="#238080"/>
+            <path d="M87 35L91 19L77 32Z" fill="#238080"/>
+            <circle cx="46" cy="48" r="12" fill="white"/>
+            <circle cx="74" cy="48" r="12" fill="white"/>
+            <circle cx="48" cy="45" r="5" fill="#3D3A36"/>
+            <circle cx="76" cy="45" r="5" fill="#3D3A36"/>
+            <circle cx="49" cy="43" r="1.5" fill="white"/>
+            <circle cx="77" cy="43" r="1.5" fill="white"/>
+            <path d="M54 67C54 67 60 67 66 67" stroke="#D4A853" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M60 59L57 66L60 64L63 66Z" fill="#D4A853"/>
+            <text x="88" y="26" fill="#D4A853" font-size="14" font-weight="bold">?</text>
+        </svg>
+        <div class="problem-content">
+            <h2>⏱️ El problema que resuelve</h2>
+            <p>Los equipos de negocio no saben qué piden cuando dicen "necesito los datos actualizados". <strong>Batch y near real-time no son lo mismo — y elegir mal tiene costo.</strong> Uno procesa todo junto de noche; el otro reacciona casi al instante.</p>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 3: GRID Batch vs NRT -->
+    <div class="main-grid">
+
+        <!-- Columna BATCH -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon negative">
+                    <svg width="26" height="26" viewBox="0 0 50 50" fill="none">
+                        <ellipse cx="25" cy="30" rx="14" ry="12" fill="#E85D4C"/>
+                        <ellipse cx="25" cy="20" rx="13" ry="11" fill="#E85D4C"/>
+                        <circle cx="19" cy="18" r="4" fill="white"/><circle cx="31" cy="18" r="4" fill="white"/>
+                        <circle cx="20" cy="19" r="2" fill="#3D3A36"/><circle cx="32" cy="19" r="2" fill="#3D3A36"/>
+                        <path d="M20 26C20 26 25 22 30 26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <!-- reloj chico -->
+                        <circle cx="38" cy="10" r="6" fill="white" stroke="#E85D4C" stroke-width="1.2"/>
+                        <line x1="38" y1="6" x2="38" y2="10" stroke="#3D3A36" stroke-width="1" stroke-linecap="round"/>
+                        <line x1="38" y1="10" x2="41" y2="10" stroke="#3D3A36" stroke-width="1" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="card-title negative">⏰ Batch</div>
+                <!-- Pixel preocupado coral -->
+                <div class="card-pixel">
+                    <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                        <ellipse cx="65" cy="95" rx="34" ry="29" fill="#E85D4C"/>
+                        <ellipse cx="50" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(25 50 82)"/>
+                        <ellipse cx="52" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(25 52 84)"/>
+                        <ellipse cx="80" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(-25 80 82)"/>
+                        <ellipse cx="78" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(-25 78 84)"/>
+                        <ellipse cx="65" cy="100" rx="21" ry="18" fill="#FFF0EE"/>
+                        <circle cx="55" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="90" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                        <circle cx="75" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="106" r="4" fill="#D4A853"/>
+                        <ellipse cx="65" cy="50" rx="30" ry="25" fill="#E85D4C"/>
+                        <path d="M40 35L36 21L50 33Z" fill="#C94A3A"/>
+                        <path d="M90 35L94 21L80 33Z" fill="#C94A3A"/>
+                        <circle cx="50" cy="48" r="11" fill="white"/><circle cx="80" cy="48" r="11" fill="white"/>
+                        <circle cx="52" cy="50" r="5" fill="#3D3A36"/><circle cx="82" cy="50" r="5" fill="#3D3A36"/>
+                        <circle cx="53" cy="48" r="1.5" fill="white"/><circle cx="83" cy="48" r="1.5" fill="white"/>
+                        <path d="M40 40C44 38 50 38 56 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M90 40C86 38 80 38 74 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M55 68C55 68 65 62 75 68" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                    </svg>
+                </div>
+            </div>
+            <ul class="item-list">
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Datos con rezago</strong><span>Se procesa en bloque — los eventos ocurren horas antes de analizarse</span></div></li>
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Ventana ciega</strong><span>Lo que pase entre ejecuciones no existe aún para el sistema</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Bajo costo y estable</strong><span>Robusto para grandes volúmenes cuando la urgencia no es el factor</span></div></li>
+            </ul>
+        </div>
+
+        <!-- Columna NRT -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon positive">
+                    <svg width="26" height="26" viewBox="0 0 50 50" fill="none">
+                        <ellipse cx="25" cy="30" rx="14" ry="12" fill="#2D9C9C"/>
+                        <ellipse cx="25" cy="20" rx="13" ry="11" fill="#2D9C9C"/>
+                        <circle cx="19" cy="18" r="4" fill="white"/><circle cx="31" cy="18" r="4" fill="white"/>
+                        <circle cx="20" cy="19" r="2" fill="#3D3A36"/><circle cx="32" cy="19" r="2" fill="#3D3A36"/>
+                        <path d="M20 26C20 26 25 30 30 26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <!-- rayo chico -->
+                        <path d="M38 4L34 12H38L35 20L43 10H39L42 4Z" fill="#D4A853"/>
+                    </svg>
+                </div>
+                <div class="card-title positive">⚡ Near Real-Time</div>
+                <!-- Pixel feliz teal -->
+                <div class="card-pixel">
+                    <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                        <ellipse cx="65" cy="95" rx="34" ry="29" fill="#2D9C9C"/>
+                        <ellipse cx="35" cy="88" rx="9" ry="15" fill="#238080" transform="rotate(-15 35 88)"/>
+                        <ellipse cx="37" cy="86" rx="6" ry="11" fill="#2D9C9C" transform="rotate(-15 37 86)"/>
+                        <ellipse cx="102" cy="70" rx="9" ry="17" fill="#238080" transform="rotate(60 102 70)"/>
+                        <ellipse cx="100" cy="73" rx="6" ry="12" fill="#2D9C9C" transform="rotate(60 100 73)"/>
+                        <ellipse cx="65" cy="100" rx="21" ry="18" fill="#E8F6F6"/>
+                        <circle cx="55" cy="94" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="90" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                        <circle cx="75" cy="94" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="106" r="4" fill="#D4A853"/>
+                        <ellipse cx="65" cy="50" rx="30" ry="25" fill="#2D9C9C"/>
+                        <path d="M40 35L36 21L50 33Z" fill="#238080"/>
+                        <path d="M90 35L94 21L80 33Z" fill="#238080"/>
+                        <circle cx="50" cy="48" r="11" fill="white"/><circle cx="80" cy="48" r="11" fill="white"/>
+                        <circle cx="52" cy="50" r="5" fill="#3D3A36"/><circle cx="82" cy="50" r="5" fill="#3D3A36"/>
+                        <circle cx="53" cy="48" r="1.5" fill="white"/><circle cx="83" cy="48" r="1.5" fill="white"/>
+                        <path d="M55 64C55 64 65 72 75 64" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                    </svg>
+                </div>
+            </div>
+            <ul class="item-list">
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Datos frescos al instante</strong><span>El sistema ve lo que ocurrió hace segundos, no ayer</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Detecta anomalías al vuelo</strong><span>Fraude, quiebre de stock, picos de demanda — sin esperar</span></div></li>
+                <li><div class="list-icon negative">✗</div><div class="list-text"><strong>Más complejo y costoso</strong><span>Requiere infraestructura y gobernanza más robustas</span></div></li>
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 4: CUÁNDO USAR CADA UNO -->
+    <div class="decision-section">
+        <div class="decision-title">
+            📋 ¿Cuándo usar cada enfoque?
+            <!-- Pixel señalando mini -->
+            <svg width="28" height="32" viewBox="0 0 130 140" fill="none" style="margin-left:auto">
+                <ellipse cx="60" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="86" rx="8" ry="14" fill="#C94A3A" transform="rotate(-15 32 86)"/>
+                <ellipse cx="34" cy="84" rx="5" ry="10" fill="#E85D4C" transform="rotate(-15 34 84)"/>
+                <ellipse cx="100" cy="72" rx="8" ry="16" fill="#C94A3A" transform="rotate(70 100 72)"/>
+                <ellipse cx="98" cy="75" rx="5" ry="11" fill="#E85D4C" transform="rotate(70 98 75)"/>
+                <ellipse cx="60" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="52" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="60" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="68" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="60" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="60" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M37 35L33 22L46 33Z" fill="#C94A3A"/>
+                <path d="M83 35L87 22L74 33Z" fill="#C94A3A"/>
+                <circle cx="47" cy="48" r="10" fill="white"/><circle cx="73" cy="48" r="10" fill="white"/>
+                <circle cx="50" cy="50" r="4" fill="#3D3A36"/><circle cx="76" cy="50" r="4" fill="#3D3A36"/>
+                <circle cx="51" cy="48" r="1.5" fill="white"/><circle cx="77" cy="48" r="1.5" fill="white"/>
+                <path d="M53 64C53 64 60 67 67 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M60 57L57 63L60 61L63 63Z" fill="#D4A853"/>
+            </svg>
+        </div>
+        <table class="decision-table">
+            <thead>
+                <tr>
+                    <th>Caso de negocio</th>
+                    <th>Velocidad que necesita</th>
+                    <th>Enfoque ideal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Reporte mensual de ventas por SKU y canal (Alicorp)</td>
+                    <td>Horas / días</td>
+                    <td><span class="tag-batch">Batch</span></td>
+                </tr>
+                <tr>
+                    <td>Forecast de demanda para planificación de producción</td>
+                    <td>Horas / días</td>
+                    <td><span class="tag-batch">Batch</span></td>
+                </tr>
+                <tr>
+                    <td>Alerta de quiebre de stock en punto de venta</td>
+                    <td>Segundos / minutos</td>
+                    <td><span class="tag-nrt">Near Real-Time</span></td>
+                </tr>
+                <tr>
+                    <td>Detección de temperatura fuera de rango en cadena de frío</td>
+                    <td>Segundos</td>
+                    <td><span class="tag-nrt">Near Real-Time</span></td>
+                </tr>
+                <tr>
+                    <td>Recomendación de producto en app trade para vendedores</td>
+                    <td>Segundos / minutos</td>
+                    <td><span class="tag-nrt">Near Real-Time</span></td>
+                </tr>
+                <tr>
+                    <td>Segmentación de bodegas para campaña de activación del mes</td>
+                    <td>Horas / días</td>
+                    <td><span class="tag-batch">Batch</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- SECCIÓN 5: EJEMPLO CON GRÁFICA -->
+    <div class="example-section">
+        <div class="example-header">
+            <div class="example-icon">🏭</div>
+            <div class="example-title">Ejemplo Alicorp: Quiebre de stock de Fideos Don Vittorio</div>
+        </div>
+
+        <!-- ESCENARIO: contexto del caso -->
+        <div style="background:var(--bg-warm);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:10px;color:var(--text-secondary);line-height:1.5;border-left:3px solid var(--accent-gold);">
+            <strong style="color:var(--text-primary);">Situación:</strong> A las 10:30am, una bodega en San Juan de Lurigancho se queda sin stock de Fideos Don Vittorio 500g. ¿Cuándo se entera Alicorp?
+        </div>
+
+        <div class="charts-grid">
+
+            <!-- BATCH -->
+            <div class="chart-box batch-box">
+                <div class="chart-label">⏰ Batch — reporte nocturno</div>
+                <div class="chart-sub">El sistema procesa todos los datos una vez al día</div>
+
+                <!-- Timeline visual en HTML puro -->
+                <div style="margin-top:10px;">
+                    <!-- fila timeline -->
+                    <div style="position:relative;height:32px;margin-bottom:6px;">
+                        <!-- barra de tiempo -->
+                        <div style="position:absolute;top:14px;left:0;right:0;height:3px;background:#E8E4DD;border-radius:2px;"></div>
+                        <!-- zona verde (ventas ok) -->
+                        <div style="position:absolute;top:10px;left:0;width:28%;height:10px;background:#2D9C9C;opacity:0.25;border-radius:2px;"></div>
+                        <!-- zona roja (sin stock, sin saberlo) -->
+                        <div style="position:absolute;top:10px;left:28%;width:60%;height:10px;background:#E85D4C;opacity:0.2;border-radius:2px;"></div>
+                        <!-- marcador quiebre -->
+                        <div style="position:absolute;top:6px;left:28%;width:2px;height:18px;background:#E85D4C;border-radius:1px;"></div>
+                        <!-- marcador proceso nocturno -->
+                        <div style="position:absolute;top:4px;right:0;width:10%;height:22px;background:#E85D4C;opacity:0.15;border:1px dashed #E85D4C;border-radius:3px;"></div>
+                        <!-- etiquetas de hora -->
+                        <div style="position:absolute;bottom:-14px;left:0;font-size:8px;color:#7a7a8a;">08h</div>
+                        <div style="position:absolute;bottom:-14px;left:24%;font-size:8px;color:#E85D4C;font-weight:700;">10:30</div>
+                        <div style="position:absolute;bottom:-14px;left:50%;font-size:8px;color:#7a7a8a;">16h</div>
+                        <div style="position:absolute;bottom:-14px;right:3%;font-size:8px;color:#E85D4C;">00h</div>
+                    </div>
+                    <div style="margin-top:20px;"></div>
+
+                    <!-- etiquetas de zona -->
+                    <div style="display:flex;gap:6px;margin-top:8px;font-size:8.5px;">
+                        <div style="flex:1;text-align:center;padding:5px 4px;background:#E85D4C;background-opacity:0.1;border-radius:6px;color:#E85D4C;font-weight:700;border:1px dashed rgba(232,93,76,0.4);">
+                            ❌ ~13.5 horas sin stock<br><span style="font-weight:400;color:#7a7a8a;">nadie sabe</span>
+                        </div>
+                        <div style="flex:0 0 auto;display:flex;align-items:center;padding:5px 6px;background:#E85D4C;border-radius:6px;color:white;font-weight:700;font-size:8px;text-align:center;">
+                            Proceso<br>00h
+                        </div>
+                    </div>
+
+                    <!-- métricas clave -->
+                    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                        <div style="background:white;border:1px solid #E8E4DD;border-radius:8px;padding:7px 8px;text-align:center;">
+                            <div style="font-size:16px;font-weight:700;color:#E85D4C;font-family:'Space Grotesk',sans-serif;">+13h</div>
+                            <div style="font-size:8px;color:#7a7a8a;">tiempo sin detectar</div>
+                        </div>
+                        <div style="background:white;border:1px solid #E8E4DD;border-radius:8px;padding:7px 8px;text-align:center;">
+                            <div style="font-size:16px;font-weight:700;color:#E85D4C;font-family:'Space Grotesk',sans-serif;">S/ 840</div>
+                            <div style="font-size:8px;color:#7a7a8a;">venta perdida est.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size:9px;color:#E85D4C;font-weight:700;text-align:center;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(232,93,76,0.3);">
+                    La bodega estuvo sin producto todo el día
+                </div>
+            </div>
+
+            <!-- NRT -->
+            <div class="chart-box nrt-box">
+                <div class="chart-label">⚡ Near Real-Time — alerta inmediata</div>
+                <div class="chart-sub">Cada venta actualiza el inventario al instante</div>
+
+                <div style="margin-top:10px;">
+                    <!-- timeline NRT -->
+                    <div style="position:relative;height:32px;margin-bottom:6px;">
+                        <div style="position:absolute;top:14px;left:0;right:0;height:3px;background:#E8E4DD;border-radius:2px;"></div>
+                        <!-- zona verde (ventas ok) -->
+                        <div style="position:absolute;top:10px;left:0;width:28%;height:10px;background:#2D9C9C;opacity:0.3;border-radius:2px;"></div>
+                        <!-- marcador quiebre -->
+                        <div style="position:absolute;top:4px;left:28%;width:2px;height:22px;background:#E85D4C;border-radius:1px;"></div>
+                        <!-- zona teal (resuelta rápido) -->
+                        <div style="position:absolute;top:10px;left:30%;width:12%;height:10px;background:#D4A853;opacity:0.4;border-radius:2px;"></div>
+                        <!-- zona verde recuperada -->
+                        <div style="position:absolute;top:10px;left:43%;width:57%;height:10px;background:#2D9C9C;opacity:0.25;border-radius:2px;"></div>
+                        <!-- etiquetas -->
+                        <div style="position:absolute;bottom:-14px;left:0;font-size:8px;color:#7a7a8a;">08h</div>
+                        <div style="position:absolute;bottom:-14px;left:24%;font-size:8px;color:#E85D4C;font-weight:700;">10:30</div>
+                        <div style="position:absolute;bottom:-14px;left:37%;font-size:8px;color:#D4A853;font-weight:700;">11h</div>
+                        <div style="position:absolute;bottom:-14px;right:0;font-size:8px;color:#7a7a8a;">00h</div>
+                    </div>
+                    <div style="margin-top:20px;"></div>
+
+                    <!-- etiquetas de zona -->
+                    <div style="display:flex;gap:6px;margin-top:8px;font-size:8.5px;">
+                        <div style="flex:1;text-align:center;padding:5px 4px;border-radius:6px;color:#2D9C9C;font-weight:700;border:1px solid rgba(45,156,156,0.4);background:rgba(45,156,156,0.06);">
+                            ✅ Alerta en 45 seg<br><span style="font-weight:400;color:#7a7a8a;">supervisor notificado</span>
+                        </div>
+                        <div style="flex:1;text-align:center;padding:5px 4px;border-radius:6px;color:#D4A853;font-weight:700;border:1px solid rgba(212,168,83,0.4);background:rgba(212,168,83,0.06);">
+                            🚚 Repuesto en 30 min<br><span style="font-weight:400;color:#7a7a8a;">stock recuperado</span>
+                        </div>
+                    </div>
+
+                    <!-- métricas clave -->
+                    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                        <div style="background:white;border:1px solid #E8E4DD;border-radius:8px;padding:7px 8px;text-align:center;">
+                            <div style="font-size:16px;font-weight:700;color:#2D9C9C;font-family:'Space Grotesk',sans-serif;">45 seg</div>
+                            <div style="font-size:8px;color:#7a7a8a;">tiempo de detección</div>
+                        </div>
+                        <div style="background:white;border:1px solid #E8E4DD;border-radius:8px;padding:7px 8px;text-align:center;">
+                            <div style="font-size:16px;font-weight:700;color:#2D9C9C;font-family:'Space Grotesk',sans-serif;">S/ 60</div>
+                            <div style="font-size:8px;color:#7a7a8a;">venta perdida est.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size:9px;color:#2D9C9C;font-weight:700;text-align:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(45,156,156,0.25);">
+                    Stock repuesto antes del pico de compras del mediodía
+                </div>
+            </div>
+        </div>
+
+        <div class="example-insight">
+            <span>💡</span>
+            <div><strong>La diferencia:</strong> Batch detecta el quiebre a las 00h del día siguiente — 13 horas después. Near real-time lanza la alerta en 45 segundos. <em>La bodega recupera stock antes del mediodía y Alicorp evita perder ~S/ 780 en ventas de ese solo punto.</em></div>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 6: ERROR COMÚN -->
+    <div class="error-section">
+        <div class="error-header">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">Error común: "Real-time siempre es mejor"</div>
+            <!-- Pixel confundido -->
+            <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="65" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(-40 32 72)"/>
+                <ellipse cx="35" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(-40 35 75)"/>
+                <ellipse cx="98" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(40 98 72)"/>
+                <ellipse cx="95" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(40 95 75)"/>
+                <ellipse cx="65" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="55" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="75" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="65" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M40 35L36 22L50 33Z" fill="#C94A3A"/>
+                <path d="M90 35L94 22L80 33Z" fill="#C94A3A"/>
+                <circle cx="50" cy="48" r="10" fill="white"/><circle cx="80" cy="48" r="10" fill="white"/>
+                <circle cx="52" cy="46" r="4" fill="#3D3A36"/><circle cx="82" cy="52" r="4" fill="#3D3A36"/>
+                <circle cx="53" cy="44" r="1.5" fill="white"/><circle cx="83" cy="50" r="1.5" fill="white"/>
+                <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                <text x="95" y="30" fill="white" font-size="11" font-weight="bold">?</text>
+                <text x="25" y="35" fill="white" font-size="9" font-weight="bold">!</text>
+            </svg>
+        </div>
+        <div class="error-content">
+            <div class="error-box wrong">
+                <div class="label">❌ Lo que dicen</div>
+                <p>"Necesitamos todo en tiempo real. <strong>Si no es instantáneo, no sirve.</strong> Igual el batch ya es obsoleto."</p>
+            </div>
+            <div class="error-box right">
+                <div class="label">✓ La realidad</div>
+                <p>Near real-time cuesta más y es más complejo. <strong>Si el negocio tolera horas o días, batch es más barato, estable y suficiente.</strong> El criterio es la urgencia del caso de uso, no la moda tecnológica.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 7: TAKEAWAY -->
+    <div class="takeaway">
+        <!-- Pixel eureka dorado -->
+        <svg width="50" height="58" viewBox="0 0 130 150" fill="none">
+            <ellipse cx="65" cy="105" rx="32" ry="27" fill="#D4A853"/>
+            <ellipse cx="38" cy="100" rx="8" ry="14" fill="#C4983F" transform="rotate(-15 38 100)"/>
+            <ellipse cx="40" cy="98" rx="5" ry="10" fill="#D4A853" transform="rotate(-15 40 98)"/>
+            <ellipse cx="100" cy="78" rx="8" ry="16" fill="#C4983F" transform="rotate(50 100 78)"/>
+            <ellipse cx="97" cy="82" rx="5" ry="11" fill="#D4A853" transform="rotate(50 97 82)"/>
+            <ellipse cx="65" cy="110" rx="19" ry="16" fill="#FDF8EC"/>
+            <circle cx="55" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="65" cy="101" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="75" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="65" cy="115" r="4" fill="#E85D4C"/>
+            <ellipse cx="65" cy="60" rx="28" ry="24" fill="#D4A853"/>
+            <path d="M42 45L38 32L52 43Z" fill="#C4983F"/>
+            <path d="M88 45L92 32L78 43Z" fill="#C4983F"/>
+            <circle cx="52" cy="58" r="10" fill="white"/><circle cx="78" cy="58" r="10" fill="white"/>
+            <circle cx="54" cy="60" r="5" fill="#D4A853"/><circle cx="80" cy="60" r="5" fill="#D4A853"/>
+            <circle cx="54" cy="60" r="2" fill="white"/><circle cx="80" cy="60" r="2" fill="white"/>
+            <path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <path d="M65 67L62 74L65 72L68 74Z" fill="#C4983F"/>
+            <circle cx="65" cy="12" r="10" fill="white" fill-opacity="0.95"/>
+            <path d="M65 2V7M55 12H60M70 12H75M57 5L60 8M73 5L70 8" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="takeaway-text">
+            <strong>Takeaway:</strong> En Alicorp, batch es como el camión de reparto que consolida rutas una vez al día — eficiente y predecible. Near real-time es el supervisor de zona con radio: reacciona al instante, pero requiere más infraestructura. <strong>La clave no es cuál es mejor, sino cuál urgencia tiene tu caso de negocio.</strong>
+        </div>
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-logo">
+            <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="10" fill="url(#fGrad9)"/>
+                <circle cx="12" cy="15" r="3" fill="white"/>
+                <circle cx="12" cy="20" r="3" fill="white"/>
+                <circle cx="12" cy="25" r="3" fill="white"/>
+                <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                <defs><linearGradient id="fGrad9" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#2D9C9C"/><stop offset="1" stop-color="#238080"/></linearGradient></defs>
+            </svg>
+            <div class="footer-logo-text">
+                <span class="footer-name">Advanced Analytics</span>
+                <span class="footer-tagline">Data Science & ML</span>
+            </div>
+        </div>
+        <div class="footer-tags">
+            <span class="footer-tag">Arquitectura de datos</span>
+            <span class="footer-tag">Scoring crediticio</span>
+            <span class="footer-tag">Playbook Vol. 9</span>
+        </div>
+    </footer>
+
+</div><!-- /web-wrapper -->
+</body>
+</html>
