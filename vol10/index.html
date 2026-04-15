@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reglas de Negocio vs Machine Learning | Playbook Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-cream: #FDFBF7;
+            --bg-warm: #F8F5F0;
+            --bg-card: #FFFFFF;
+            --text-primary: #3D3A36;
+            --text-secondary: #4a4a5a;
+            --text-muted: #7a7a8a;
+            --accent-coral: #4F46E5;
+            --accent-coral-dark: #3730C4;
+            --accent-coral-light: rgba(79,70,229,0.10);
+            --accent-teal: #2ECFA8;
+            --accent-teal-dark: #24B090;
+            --accent-teal-light: rgba(46,207,168,0.10);
+            --accent-gold: #F0B429;
+            --accent-gold-dark: #D9A020;
+            --accent-gold-light: rgba(240,180,41,0.10);
+            --dark-warm: #3D3A36;
+            --border-light: #E8E4DD;
+            --shadow-sm: 0 2px 8px rgba(26,26,46,0.06);
+            --shadow-md: 0 4px 16px rgba(26,26,46,0.10);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        html { background: #f0ede8; }
+        .web-wrapper { max-width: 210mm; margin: 0 auto; padding: 32px 16px; }
+
+        /* ── BACK BAR ── */
+        .back-bar {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(61,58,54,0.96);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-radius: 0 0 12px 12px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; color: white; text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; padding: 5px 13px; border-radius: 100px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); transition: all 0.2s ease; }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .back-btn svg { width: 13px; height: 13px; }
+        .back-bar-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+        /* ── HEADER ── */
+        header {
+            background: linear-gradient(135deg, #F0EEFF 0%, #EBF9F5 100%);
+            border-radius: 20px;
+            padding: 22px 24px;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+        header::before {
+            content: ''; position: absolute; bottom: -40px; right: -20px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(124,106,245,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        header::after {
+            content: ''; position: absolute; top: -30px; left: 40%;
+            width: 160px; height: 160px;
+            background: radial-gradient(circle, rgba(46,207,168,0.07) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .header-main { display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .area-logo { display: flex; align-items: center; gap: 8px; }
+        .area-logo svg { width: 30px; height: 30px; }
+        .logo-name { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-primary); display: block; }
+        .logo-tagline { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+        .badge { display: flex; align-items: center; gap: 6px; background: rgba(124,106,245,0.15); border: 1px solid rgba(124,106,245,0.3); padding: 4px 12px; border-radius: 100px; font-size: 10px; font-weight: 600; color: var(--accent-coral); text-transform: uppercase; }
+        .badge-dot { width: 6px; height: 6px; background: var(--accent-coral); border-radius: 50%; }
+        .badge-vol { background: var(--accent-coral); color: white; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; line-height: 1.2; color: var(--text-primary); margin-bottom: 6px; }
+        h1 .highlight { color: var(--accent-coral); }
+        .subtitle { font-size: 11px; color: var(--text-muted); max-width: 420px; }
+
+        /* ── PROBLEMA ── */
+        .problem-section {
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-gold);
+            border-radius: 0 14px 14px 0;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+        .problem-content h2 { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--accent-gold); margin-bottom: 3px; }
+        .problem-content p { font-size: 10.5px; color: var(--text-secondary); line-height: 1.5; }
+        .problem-content p strong { color: var(--text-primary); }
+
+        /* ── ÁRBOL DE DECISIÓN ── */
+        .decision-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px; font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.6px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
+
+        .decision-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            font-size: 10px;
+        }
+
+        .dt-start {
+            background: var(--dark-warm);
+            color: white;
+            border-radius: 100px;
+            padding: 7px 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10.5px; font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .dt-connector { width: 2px; height: 14px; background: var(--border-light); margin: 0 auto; }
+        .dt-connector.split { display: flex; justify-content: space-around; width: 80%; height: 14px; position: relative; }
+        .dt-connector.split::before { content: ''; position: absolute; left: 50%; top: 0; width: 2px; height: 100%; background: var(--border-light); }
+
+        .dt-questions-row {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr;
+            width: 100%;
+            gap: 0;
+            align-items: start;
+            position: relative;
+        }
+        .dt-questions-row::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 25%; right: 25%;
+            height: 2px;
+            background: var(--border-light);
+        }
+
+        .dt-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .dt-vline { width: 2px; height: 14px; background: var(--border-light); }
+
+        .dt-question {
+            border: 1.5px solid var(--border-light);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 9.5px;
+            text-align: center;
+            background: var(--bg-warm);
+            color: var(--text-secondary);
+            font-style: italic;
+            max-width: 130px;
+        }
+
+        .dt-divider-label {
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 9px; font-weight: 700;
+            color: var(--text-muted);
+            padding-top: 8px;
+        }
+
+        .dt-answer {
+            display: flex; align-items: center; justify-content: center;
+            gap: 4px;
+            border-radius: 100px;
+            padding: 4px 10px;
+            font-size: 9px; font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase; letter-spacing: 0.3px;
+        }
+        .dt-answer.yes { background: var(--accent-teal-light); color: var(--accent-teal-dark); border: 1px solid rgba(46,207,168,0.3); }
+        .dt-answer.no { background: var(--accent-coral-light); color: var(--accent-coral); border: 1px solid rgba(79,70,229,0.25); }
+
+        .dt-outcomes-row {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr;
+            width: 100%;
+            gap: 0;
+            align-items: start;
+        }
+
+        .dt-outcome {
+            border-radius: 12px;
+            padding: 10px 12px;
+            text-align: center;
+        }
+        .dt-outcome.rules {
+            background: var(--accent-teal-light);
+            border: 1.5px solid rgba(46,207,168,0.4);
+        }
+        .dt-outcome.ml {
+            background: var(--accent-coral-light);
+            border: 1.5px solid rgba(79,70,229,0.3);
+        }
+        .dt-outcome-icon { font-size: 16px; margin-bottom: 3px; }
+        .dt-outcome-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px; font-weight: 700;
+            display: block; margin-bottom: 5px;
+        }
+        .dt-outcome.rules .dt-outcome-label { color: var(--accent-teal-dark); }
+        .dt-outcome.ml .dt-outcome-label { color: var(--accent-coral); }
+
+        .dt-chips { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+        .dt-chip {
+            font-size: 8.5px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            background: white;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        /* ── COMPARATIVO VISUAL ── */
+        .compare-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr 1fr;
+            gap: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            font-size: 9.5px;
+        }
+
+        .cg-header {
+            background: var(--dark-warm);
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px; font-weight: 700;
+            padding: 8px 12px;
+            text-align: center;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .cg-header.dim { background: #4a4755; font-size: 9px; color: rgba(255,255,255,0.6); text-align: left; justify-content: flex-start; }
+        .cg-header.rules-h { background: rgba(46,207,168,0.12); color: var(--accent-teal-dark); border-bottom: 2px solid var(--accent-teal); }
+        .cg-header.ml-h { background: rgba(79,70,229,0.1); color: var(--accent-coral); border-bottom: 2px solid var(--accent-coral); }
+
+        .cg-row-label {
+            background: var(--bg-warm);
+            border-top: 1px solid var(--border-light);
+            padding: 8px 12px;
+            font-size: 9px; font-weight: 700;
+            color: var(--text-secondary);
+            display: flex; align-items: center;
+            text-transform: uppercase; letter-spacing: 0.3px;
+        }
+
+        .cg-cell {
+            border-top: 1px solid var(--border-light);
+            border-left: 1px solid var(--border-light);
+            padding: 8px 12px;
+            font-size: 9.5px;
+            color: var(--text-secondary);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .cg-cell.rules-col { background: rgba(46,207,168,0.03); }
+        .cg-cell.ml-col { background: rgba(79,70,229,0.02); }
+
+        .cg-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 100px;
+            font-size: 8.5px; font-weight: 600; white-space: nowrap;
+        }
+        .cg-pill.green { background: rgba(46,207,168,0.15); color: var(--accent-teal-dark); }
+        .cg-pill.blue { background: rgba(79,70,229,0.12); color: var(--accent-coral); }
+        .cg-pill.amber { background: rgba(240,180,41,0.15); color: var(--accent-gold-dark); }
+
+        .complexity-bar {
+            display: flex; gap: 3px; align-items: center;
+        }
+        .complexity-dot {
+            width: 8px; height: 8px; border-radius: 2px;
+        }
+        .complexity-dot.filled-teal { background: var(--accent-teal); }
+        .complexity-dot.filled-blue { background: var(--accent-coral); }
+        .complexity-dot.empty { background: var(--border-light); }
+
+        /* ── EJEMPLO (FLUJO VISUAL) ── */
+        .example-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .example-scenario {
+            background: var(--bg-warm);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+            border: 1px solid var(--border-light);
+        }
+        .example-scenario strong { color: var(--text-primary); }
+
+        .flow-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .flow-card {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .flow-card.fc-rules { border: 1.5px dashed rgba(124,106,245,0.35); }
+        .flow-card.fc-ml { border: 1.5px solid var(--accent-teal); }
+
+        .flow-card-head {
+            padding: 7px 12px;
+            display: flex; align-items: center; gap: 7px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10.5px; font-weight: 700;
+        }
+        .fc-rules .flow-card-head { background: rgba(79,70,229,0.07); color: var(--accent-coral); }
+        .fc-ml .flow-card-head { background: rgba(46,207,168,0.08); color: var(--accent-teal-dark); }
+
+        .flow-steps {
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .flow-step {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 9px; color: var(--text-secondary);
+        }
+        .flow-step-num {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px; font-weight: 700; flex-shrink: 0;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .fc-rules .flow-step-num { background: var(--accent-coral-light); color: var(--accent-coral); }
+        .fc-ml .flow-step-num { background: var(--accent-teal-light); color: var(--accent-teal-dark); }
+
+        .flow-arrow {
+            width: 2px; height: 8px; background: var(--border-light);
+            margin-left: 7px;
+        }
+
+        .flow-result {
+            margin: 6px 12px 10px;
+            border-radius: 8px;
+            padding: 7px 10px;
+            text-align: center;
+        }
+        .fc-rules .flow-result { background: rgba(124,106,245,0.07); }
+        .fc-ml .flow-result { background: rgba(46,207,168,0.10); }
+
+        .result-kpi {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px; font-weight: 700;
+            display: block;
+        }
+        .fc-rules .result-kpi { color: var(--accent-coral); }
+        .fc-ml .result-kpi { color: var(--accent-teal); }
+
+        .result-label-sm { font-size: 8.5px; color: var(--text-muted); }
+
+        .example-insight {
+            background: var(--accent-gold-light);
+            border-left: 3px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 9.5px; color: var(--text-secondary); line-height: 1.5;
+        }
+        .example-insight strong { color: var(--accent-gold-dark); }
+        .example-insight em { color: var(--accent-teal-dark); font-style: normal; font-weight: 600; }
+
+        /* ── BOTTOM ROW (error + takeaway) ── */
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 13px;
+        }
+
+        .error-section {
+            background: rgba(124,106,245,0.05);
+            border: 1px solid rgba(124,106,245,0.18);
+            border-radius: 14px;
+            padding: 13px;
+        }
+        .error-header { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+        .error-icon { width: 24px; height: 24px; background: var(--accent-coral); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+        .error-title { font-family: 'Space Grotesk', sans-serif; font-size: 10.5px; font-weight: 700; color: var(--accent-coral); }
+
+        .error-vs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+        }
+        .error-box {
+            background: white; border-radius: 8px; padding: 8px 10px; font-size: 9.5px;
+        }
+        .error-box .label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .error-box.wrong { border: 1px dashed rgba(124,106,245,0.35); }
+        .error-box.wrong .label { color: var(--accent-coral); }
+        .error-box.right { border: 1px solid rgba(46,207,168,0.4); }
+        .error-box.right .label { color: var(--accent-teal-dark); }
+        .error-box p { color: var(--text-secondary); line-height: 1.45; }
+
+        .takeaway {
+            background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%);
+            border: 1px solid rgba(240,180,41,0.2);
+            border-radius: 14px;
+            padding: 13px 16px;
+            display: flex; flex-direction: column; justify-content: center; gap: 10px;
+        }
+        .takeaway-eyebrow {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 9px; font-weight: 700;
+            color: var(--accent-gold);
+            text-transform: uppercase; letter-spacing: 0.8px;
+        }
+        .takeaway-metaphor {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        .meta-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 9px 10px;
+        }
+        .meta-icon { font-size: 18px; margin-bottom: 4px; }
+        .meta-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 700; color: white; margin-bottom: 2px; }
+        .meta-desc { font-size: 8.5px; color: rgba(255,255,255,0.5); line-height: 1.4; }
+
+        .takeaway-bottom {
+            background: rgba(240,180,41,0.1);
+            border-radius: 8px; padding: 7px 10px;
+            font-size: 9px; color: rgba(255,255,255,0.75); line-height: 1.5;
+            text-align: center;
+        }
+        .takeaway-bottom strong { color: var(--accent-gold); }
+
+        /* ── FOOTER ── */
+        footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border-light); }
+        .footer-logo { display: flex; align-items: center; gap: 8px; }
+        .footer-logo svg { width: 22px; height: 22px; }
+        .footer-logo-text .footer-name { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 700; color: var(--text-primary); display: block; }
+        .footer-logo-text .footer-tagline { font-size: 8px; color: var(--text-muted); display: block; }
+        .footer-tags { display: flex; gap: 6px; }
+        .footer-tag { font-size: 9px; background: rgba(255,255,255,0.05); padding: 3px 10px; border-radius: 100px; color: var(--text-muted); border: 1px solid var(--border-light); }
+
+        @media (max-width: 800px) {
+            body { width: 100% !important; padding: 16px !important; }
+            .bottom-row, .flow-compare { grid-template-columns: 1fr !important; }
+            h1 { font-size: 20px !important; }
+            .web-wrapper { padding: 16px 8px; }
+        }
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .back-bar { display: none; }
+            .web-wrapper { padding: 0; }
+        }
+        ::selection { background: rgba(124,106,245,0.25); color: var(--text-primary); }
+    </style>
+</head>
+<body>
+<div class="web-wrapper">
+
+    <!-- BACK BAR -->
+    <div class="back-bar">
+        <a href="../" class="back-btn">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Todos los Playbooks
+        </a>
+        <span class="back-bar-label">Playbook Vol. 10</span>
+    </div>
+
+    <!-- SECCIÓN 1: HEADER -->
+    <header>
+        <div class="header-main">
+            <div class="header-avatar">
+                <svg width="90" height="105" viewBox="0 0 130 140" fill="none">
+                    <ellipse cx="30" cy="95" rx="10" ry="16" fill="#3730C4" transform="rotate(10 30 95)"/>
+                    <ellipse cx="32" cy="94" rx="6" ry="12" fill="#5448C0" transform="rotate(10 32 94)"/>
+                    <ellipse cx="100" cy="95" rx="10" ry="16" fill="#3730C4" transform="rotate(-10 100 95)"/>
+                    <ellipse cx="98" cy="94" rx="6" ry="12" fill="#5448C0" transform="rotate(-10 98 94)"/>
+                    <ellipse cx="65" cy="95" rx="38" ry="33" fill="url(#hBodyV2)"/>
+                    <ellipse cx="65" cy="100" rx="26" ry="23" fill="rgba(124,106,245,0.15)"/>
+                    <circle cx="50" cy="88" r="5" fill="#4F46E5" fill-opacity="0.7"/>
+                    <circle cx="65" cy="82" r="5" fill="#4F46E5" fill-opacity="0.7"/>
+                    <circle cx="80" cy="88" r="5" fill="#4F46E5" fill-opacity="0.7"/>
+                    <circle cx="55" cy="100" r="5" fill="#2ECFA8" fill-opacity="0.5"/>
+                    <circle cx="75" cy="100" r="5" fill="#2ECFA8" fill-opacity="0.5"/>
+                    <circle cx="65" cy="112" r="6" fill="#F0B429"/>
+                    <line x1="50" y1="88" x2="65" y2="82" stroke="#4F46E5" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="80" y1="88" x2="65" y2="82" stroke="#4F46E5" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="50" y1="88" x2="55" y2="100" stroke="#2ECFA8" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="80" y1="88" x2="75" y2="100" stroke="#2ECFA8" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="55" y1="100" x2="65" y2="112" stroke="#F0B429" stroke-width="2" stroke-opacity="0.6"/>
+                    <line x1="75" y1="100" x2="65" y2="112" stroke="#F0B429" stroke-width="2" stroke-opacity="0.6"/>
+                    <ellipse cx="65" cy="50" rx="33" ry="28" fill="url(#hHeadV2)"/>
+                    <path d="M37 35L32 17L47 30Z" fill="#3730C4"/>
+                    <path d="M93 35L98 17L83 30Z" fill="#3730C4"/>
+                    <circle cx="50" cy="48" r="13" fill="white" stroke="#2ECFA8" stroke-width="1.5"/>
+                    <circle cx="80" cy="48" r="13" fill="white" stroke="#2ECFA8" stroke-width="1.5"/>
+                    <circle cx="52" cy="50" r="6" fill="#3D3A36"/>
+                    <circle cx="82" cy="50" r="6" fill="#3D3A36"/>
+                    <circle cx="54" cy="48" r="2" fill="white"/>
+                    <circle cx="84" cy="48" r="2" fill="white"/>
+                    <path d="M37 48C37 48 42 43 50 43" stroke="#F0B429" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M93 48C93 48 88 43 80 43" stroke="#F0B429" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="62" y1="48" x2="68" y2="48" stroke="#F0B429" stroke-width="2.5"/>
+                    <path d="M65 60L61 69L65 67L69 69Z" fill="#F0B429"/>
+                    <path d="M50 123L45 133M50 123L50 133M50 123L55 133" stroke="#2ECFA8" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M80 123L75 133M80 123L80 133M80 123L85 133" stroke="#2ECFA8" stroke-width="2.5" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="hBodyV2" x1="27" y1="62" x2="103" y2="128"><stop stop-color="#4F46E5"/><stop offset="1" stop-color="#3730C4"/></linearGradient>
+                        <linearGradient id="hHeadV2" x1="32" y1="22" x2="98" y2="78"><stop stop-color="#4F46E5"/><stop offset="1" stop-color="#3730C4"/></linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div class="header-text">
+                <div class="header-top">
+                    <div class="area-logo">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect width="40" height="40" rx="10" fill="url(#logoGradV2)"/>
+                            <circle cx="12" cy="15" r="3" fill="white"/>
+                            <circle cx="12" cy="20" r="3" fill="white"/>
+                            <circle cx="12" cy="25" r="3" fill="white"/>
+                            <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="28" cy="20" r="4" fill="#F0B429"/>
+                            <defs><linearGradient id="logoGradV2" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4F46E5"/><stop offset="1" stop-color="#3730C4"/></linearGradient></defs>
+                        </svg>
+                        <div class="area-logo-text">
+                            <span class="logo-name">Advanced Analytics</span>
+                            <span class="logo-tagline">Data Science & ML</span>
+                        </div>
+                    </div>
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Playbook
+                        <span class="badge-vol">Vol. 10</span>
+                    </div>
+                </div>
+                <h1>¿Cuándo usar <span class="highlight">Reglas de Negocio o Machine Learning</span>?</h1>
+                <p class="subtitle">Cómo elegir la herramienta correcta para cada decisión — sin ser técnico.</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECCIÓN 2: PROBLEMA -->
+    <div class="problem-section">
+        <svg width="38" height="44" viewBox="0 0 120 140" fill="none">
+            <ellipse cx="60" cy="95" rx="36" ry="31" fill="#4F46E5"/>
+            <ellipse cx="32" cy="70" rx="9" ry="16" fill="#3730C4" transform="rotate(-30 32 70)"/>
+            <ellipse cx="35" cy="72" rx="6" ry="11" fill="#4F46E5" transform="rotate(-30 35 72)"/>
+            <ellipse cx="92" cy="88" rx="9" ry="15" fill="#3730C4" transform="rotate(15 92 88)"/>
+            <ellipse cx="90" cy="86" rx="6" ry="11" fill="#4F46E5" transform="rotate(15 90 86)"/>
+            <ellipse cx="60" cy="100" rx="22" ry="19" fill="rgba(124,106,245,0.15)"/>
+            <circle cx="50" cy="92" r="4" fill="#4F46E5" fill-opacity="0.5"/>
+            <circle cx="60" cy="87" r="4" fill="#4F46E5" fill-opacity="0.5"/>
+            <circle cx="70" cy="92" r="4" fill="#4F46E5" fill-opacity="0.5"/>
+            <circle cx="60" cy="106" r="5" fill="#F0B429"/>
+            <ellipse cx="60" cy="50" rx="32" ry="27" fill="#4F46E5"/>
+            <path d="M33 35L29 19L43 32Z" fill="#3730C4"/>
+            <path d="M87 35L91 19L77 32Z" fill="#3730C4"/>
+            <circle cx="46" cy="48" r="12" fill="white"/><circle cx="74" cy="48" r="12" fill="white"/>
+            <circle cx="48" cy="45" r="5" fill="#3D3A36"/><circle cx="76" cy="45" r="5" fill="#3D3A36"/>
+            <circle cx="49" cy="43" r="1.5" fill="white"/><circle cx="77" cy="43" r="1.5" fill="white"/>
+            <path d="M54 67C54 67 60 67 66 67" stroke="#F0B429" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M60 59L57 66L60 64L63 66Z" fill="#F0B429"/>
+            <text x="88" y="26" fill="#F0B429" font-size="14" font-weight="bold">?</text>
+        </svg>
+        <div class="problem-content">
+            <h2>🎯 El dilema del equipo comercial</h2>
+            <p>¿Necesitamos ML o con reglas simples basta? La respuesta depende del tipo de decisión, no de la tecnología. <strong>Elegir mal tiene un costo real:</strong> perdemos ventas con recomendaciones genéricas, o gastamos en complejidad innecesaria.</p>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 3: ÁRBOL DE DECISIÓN -->
+    <div class="decision-section">
+        <div class="section-title">🔀 ¿Cómo decidir?</div>
+        <div class="decision-tree">
+
+            <div class="dt-start">Nueva decisión de negocio</div>
+            <div class="dt-connector"></div>
+
+            <!-- Preguntas bifurcadas -->
+            <div class="dt-questions-row">
+                <div class="dt-branch">
+                    <div class="dt-vline"></div>
+                    <div class="dt-question">"¿La lógica es estable, clara o hay restricción legal?"</div>
+                    <div class="dt-vline"></div>
+                    <div class="dt-answer yes">✓ Sí</div>
+                </div>
+                <div class="dt-divider-label">vs</div>
+                <div class="dt-branch">
+                    <div class="dt-vline"></div>
+                    <div class="dt-question">"¿Hay patrones complejos, miles de clientes o quiero que mejore solo?"</div>
+                    <div class="dt-vline"></div>
+                    <div class="dt-answer no">→ Sí</div>
+                </div>
+            </div>
+
+            <div style="height:12px;"></div>
+
+            <!-- Resultados -->
+            <div class="dt-outcomes-row">
+                <div class="dt-outcome rules">
+                    <div class="dt-outcome-icon">📋</div>
+                    <span class="dt-outcome-label">Reglas de Negocio</span>
+                    <div class="dt-chips">
+                        <span class="dt-chip">Rápido de implementar</span>
+                        <span class="dt-chip">Fácil de explicar</span>
+                        <span class="dt-chip">Sin datos históricos</span>
+                        <span class="dt-chip">Trazable / auditable</span>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center;">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <circle cx="14" cy="14" r="13" stroke="var(--border-light)" stroke-width="1.5"/>
+                        <text x="14" y="18" text-anchor="middle" font-size="11" font-family="Space Grotesk" font-weight="700" fill="var(--text-muted)">o</text>
+                    </svg>
+                </div>
+                <div class="dt-outcome ml">
+                    <div class="dt-outcome-icon">🧠</div>
+                    <span class="dt-outcome-label">Machine Learning</span>
+                    <div class="dt-chips">
+                        <span class="dt-chip">Personalización a escala</span>
+                        <span class="dt-chip">Aprende solo</span>
+                        <span class="dt-chip">Patrones ocultos</span>
+                        <span class="dt-chip">Optimiza métricas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 4: TABLA COMPARATIVA -->
+    <div class="compare-section">
+        <div class="section-title">📊 Comparativo general</div>
+        <div class="compare-grid">
+            <!-- Headers -->
+            <div class="cg-header dim">Dimensión</div>
+            <div class="cg-header rules-h">📋 Reglas</div>
+            <div class="cg-header ml-h">🧠 Machine Learning</div>
+
+            <!-- Fila 1: Complejidad -->
+            <div class="cg-row-label">Complejidad</div>
+            <div class="cg-cell rules-col">
+                <div class="complexity-bar">
+                    <div class="complexity-dot filled-teal"></div>
+                    <div class="complexity-dot empty"></div>
+                    <div class="complexity-dot empty"></div>
+                </div>
+                <span>Baja</span>
+            </div>
+            <div class="cg-cell ml-col">
+                <div class="complexity-bar">
+                    <div class="complexity-dot filled-blue"></div>
+                    <div class="complexity-dot filled-blue"></div>
+                    <div class="complexity-dot filled-blue"></div>
+                </div>
+                <span>Alta</span>
+            </div>
+
+            <!-- Fila 2: Velocidad de implementación -->
+            <div class="cg-row-label">Implementación</div>
+            <div class="cg-cell rules-col"><span class="cg-pill green">⚡ Días</span></div>
+            <div class="cg-cell ml-col"><span class="cg-pill amber">⏳ Semanas / meses</span></div>
+
+            <!-- Fila 3: Datos requeridos -->
+            <div class="cg-row-label">Datos necesarios</div>
+            <div class="cg-cell rules-col">Ninguno o mínimo</div>
+            <div class="cg-cell ml-col">Historial extenso requerido</div>
+
+            <!-- Fila 4: Escalabilidad -->
+            <div class="cg-row-label">Escalabilidad</div>
+            <div class="cg-cell rules-col"><span class="cg-pill amber">Limitada — crece linealmente</span></div>
+            <div class="cg-cell ml-col"><span class="cg-pill green">Alta — escala sin esfuerzo</span></div>
+
+            <!-- Fila 5: Explicabilidad -->
+            <div class="cg-row-label">Explicabilidad</div>
+            <div class="cg-cell rules-col"><span class="cg-pill green">✓ Total</span></div>
+            <div class="cg-cell ml-col"><span class="cg-pill blue">Parcial (caja negra)</span></div>
+
+            <!-- Fila 6: Mantenimiento -->
+            <div class="cg-row-label">Mantenimiento</div>
+            <div class="cg-cell rules-col">Manual — requiere revisión</div>
+            <div class="cg-cell ml-col">Automatizado — aprende solo</div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 5: EJEMPLO (FLUJO VISUAL) -->
+    <div class="example-section">
+        <div class="section-title">🛒 Ejemplo: Sistema de Recomendación de Productos</div>
+
+        <div class="example-scenario">
+            <span style="font-size:16px;">👤</span>
+            <span><strong>Situación:</strong> Cliente acaba de comprar la Categoría A. ¿Qué le recomendamos?</span>
+        </div>
+
+        <div class="flow-compare">
+            <!-- Reglas -->
+            <div class="flow-card fc-rules">
+                <div class="flow-card-head">
+                    <span>📋</span> Solo Reglas
+                </div>
+                <div class="flow-steps">
+                    <div class="flow-step">
+                        <div class="flow-step-num">1</div>
+                        <span>Regla: "Compró Categoría A → mostrar top 3 de Categoría A"</span>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-step">
+                        <div class="flow-step-num">2</div>
+                        <span>Todos los clientes ven lo mismo</span>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-step">
+                        <div class="flow-step-num">3</div>
+                        <span>Se actualiza manualmente cada mes</span>
+                    </div>
+                </div>
+                <div class="flow-result">
+                    <span class="result-kpi">~3–5%</span>
+                    <span class="result-label-sm">tasa de clic · recomendaciones genéricas</span>
+                </div>
+            </div>
+
+            <!-- ML -->
+            <div class="flow-card fc-ml">
+                <div class="flow-card-head">
+                    <span>🧠</span> Machine Learning
+                </div>
+                <div class="flow-steps">
+                    <div class="flow-step">
+                        <div class="flow-step-num">1</div>
+                        <span>Analiza historial, contexto y patrones de miles de perfiles</span>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-step">
+                        <div class="flow-step-num">2</div>
+                        <span>Cada cliente ve productos distintos y relevantes</span>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-step">
+                        <div class="flow-step-num">3</div>
+                        <span>Aprende semana a semana qué genera más ventas</span>
+                    </div>
+                </div>
+                <div class="flow-result">
+                    <span class="result-kpi">~12–18%</span>
+                    <span class="result-label-sm">tasa de clic · mayor conversión y ticket</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-insight">
+            💡 <strong>Clave:</strong> Las reglas dicen <em>"qué creemos que el cliente quiere"</em>. El ML dice <em>"qué ha demostrado querer este perfil"</em>. No reemplaza tu criterio comercial — lo escala a miles de clientes.
+        </div>
+    </div>
+
+    <!-- SECCIÓN 6 + 7: ERROR COMÚN + TAKEAWAY (en fila) -->
+    <div class="bottom-row">
+
+        <!-- Error común -->
+        <div class="error-section">
+            <div class="error-header">
+                <div class="error-icon">⚠️</div>
+                <div class="error-title">"Pongamos ML en todo para modernizarnos"</div>
+            </div>
+            <div class="error-vs">
+                <div class="error-box wrong">
+                    <div class="label">❌ Mito</div>
+                    <p>"El ML siempre es mejor. Hay que usarlo en todo."</p>
+                </div>
+                <div class="error-box right">
+                    <div class="label">✓ Realidad</div>
+                    <p>Para decisiones simples y estables, <strong>una buena regla es más rápida, explicable y barata.</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Takeaway -->
+        <div class="takeaway">
+            <div class="takeaway-eyebrow">🏁 Takeaway</div>
+            <div class="takeaway-metaphor">
+                <div class="meta-item">
+                    <div class="meta-icon">🚦</div>
+                    <div class="meta-label">Reglas</div>
+                    <div class="meta-desc">Como un semáforo: claro, rápido y necesario para lo inamovible.</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-icon">🗺️</div>
+                    <div class="meta-label">Machine Learning</div>
+                    <div class="meta-desc">Como un GPS: imprescindible cuando el camino es complejo y cada usuario es único.</div>
+                </div>
+            </div>
+            <div class="takeaway-bottom">
+                <strong>El mejor sistema combina ambos:</strong> reglas para lo inamovible, ML para personalizar a escala.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-logo">
+            <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="10" fill="url(#fGradV2)"/>
+                <circle cx="12" cy="15" r="3" fill="white"/>
+                <circle cx="12" cy="20" r="3" fill="white"/>
+                <circle cx="12" cy="25" r="3" fill="white"/>
+                <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="28" cy="20" r="4" fill="#F0B429"/>
+                <defs><linearGradient id="fGradV2" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#4F46E5"/><stop offset="1" stop-color="#3730C4"/></linearGradient></defs>
+            </svg>
+            <div class="footer-logo-text">
+                <span class="footer-name">Advanced Analytics</span>
+                <span class="footer-tagline">Data Science & ML</span>
+            </div>
+        </div>
+        <div class="footer-tags">
+            <span class="footer-tag">Playbook Vol. 10</span>
+        </div>
+    </footer>
+
+</div>
+</body>
+</html>
