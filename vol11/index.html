@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regresión vs Clasificación | Playbook Analytics Vol. 11</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-cream: #FDFBF7;
+            --bg-warm: #F8F5F0;
+            --bg-card: #FFFFFF;
+            --text-primary: #3D3A36;
+            --text-secondary: #4a4a5a;
+            --text-muted: #7a7a8a;
+            --accent-coral: #E85D4C;
+            --accent-coral-dark: #C94A3A;
+            --accent-coral-light: #FFF0EE;
+            --accent-teal: #2D9C9C;
+            --accent-teal-dark: #238080;
+            --accent-teal-light: #E8F6F6;
+            --accent-gold: #D4A853;
+            --accent-gold-dark: #C4983F;
+            --accent-gold-light: #FDF8EC;
+            --dark-warm: #3D3A36;
+            --border-light: #E8E4DD;
+            --shadow-sm: 0 2px 8px rgba(26, 26, 46, 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--bg-warm) 0%, var(--bg-cream) 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            right: -20px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--accent-coral-light) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-main { display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; }
+        .header-avatar { flex-shrink: 0; }
+        .header-text { flex: 1; position: relative; z-index: 1; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .area-logo { display: flex; align-items: center; gap: 8px; }
+        .area-logo svg { width: 30px; height: 30px; }
+        .logo-name { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--text-primary); display: block; }
+        .logo-tagline { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+
+        .badge { display: flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--border-light); padding: 4px 12px; border-radius: 100px; font-size: 10px; font-weight: 600; color: var(--accent-coral); text-transform: uppercase; }
+        .badge-dot { width: 6px; height: 6px; background: var(--accent-coral); border-radius: 50%; }
+        .badge-vol { background: var(--accent-coral); color: white; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; line-height: 1.2; color: var(--text-primary); margin-bottom: 8px; }
+        h1 .highlight { color: var(--accent-coral); }
+        .subtitle { font-size: 12px; color: var(--text-muted); max-width: 400px; }
+
+        /* PROBLEMA */
+        .problem-section {
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent-gold);
+            border-radius: 0 14px 14px 0;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .problem-content h2 { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent-coral); margin-bottom: 6px; }
+        .problem-content p { font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+        .problem-content p strong { color: var(--text-primary); }
+
+        /* GRID PRINCIPAL */
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .card { background: var(--bg-card); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .card-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .card-icon.positive { background: var(--accent-teal-light); }
+        .card-icon.negative { background: var(--accent-coral-light); }
+        .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; flex: 1; }
+        .card-title.positive { color: var(--accent-teal); }
+        .card-title.negative { color: var(--accent-coral); }
+        .card-pixel { margin-left: auto; }
+
+        .item-list { list-style: none; }
+        .item-list li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+        .list-icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 9px; margin-top: 1px; }
+        .list-icon.positive { background: var(--accent-teal-light); color: var(--accent-teal); }
+        .list-icon.negative { background: var(--accent-coral-light); color: var(--accent-coral); }
+        .list-text strong { display: block; font-size: 11px; font-weight: 700; color: var(--text-primary); }
+        .list-text span { display: block; font-size: 9px; color: var(--text-muted); line-height: 1.4; }
+
+        /* EJEMPLO */
+        .example-section { background: var(--bg-card); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+        .example-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+        .example-icon { font-size: 16px; }
+        .example-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent-coral); flex: 1; }
+
+        .cases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .case-card { border-radius: 12px; padding: 12px; }
+        .case-card.option-a { border: 1px dashed rgba(232, 93, 76, 0.3); background: var(--accent-coral-light); }
+        .case-card.option-b { border: 2px solid var(--accent-teal); background: var(--accent-teal-light); }
+        .case-header { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+        .case-number { font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; color: white; }
+        .case-card.option-a .case-number { background: var(--accent-coral); }
+        .case-card.option-b .case-number { background: var(--accent-teal); }
+        .case-label { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; }
+        .case-card.option-a .case-label { color: var(--accent-coral); }
+        .case-card.option-b .case-label { color: var(--accent-teal); }
+        .case-rule { background: white; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 500; }
+        .case-detail { font-size: 9px; margin-bottom: 4px; line-height: 1.4; color: var(--text-secondary); }
+        .case-detail strong.a { color: var(--accent-coral); }
+        .case-detail strong.b { color: var(--accent-teal); }
+        .case-result { border-radius: 6px; padding: 8px; text-align: center; margin-top: 8px; }
+        .case-result.bad { background: rgba(232, 93, 76, 0.1); }
+        .case-result.good { background: rgba(45, 156, 156, 0.15); }
+        .result-label { display: block; font-size: 8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+        .result-value { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
+        .case-result.bad .result-value { color: var(--accent-coral); }
+        .case-result.good .result-value { color: var(--accent-teal); }
+        .result-desc { display: block; font-size: 8px; color: var(--text-muted); margin-top: 2px; }
+
+        .example-insight { background: var(--accent-gold-light); border-top: 2px solid var(--accent-gold); border-radius: 0 0 8px 8px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 8px; font-size: 10px; color: var(--text-secondary); line-height: 1.5; }
+        .example-insight strong { color: var(--accent-gold); }
+        .example-insight em { color: var(--accent-teal); text-decoration: underline; font-style: normal; }
+
+        /* ERROR */
+        .error-section { background: var(--accent-coral-light); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+        .error-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .error-icon { width: 28px; height: 28px; background: var(--accent-coral); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .error-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--accent-coral); flex: 1; }
+        .error-content { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .error-box { background: white; border-radius: 8px; padding: 10px; font-size: 10px; }
+        .error-box .label { font-size: 9px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .error-box.wrong { border: 1px dashed var(--accent-coral); }
+        .error-box.wrong .label { color: var(--accent-coral); }
+        .error-box.right { border: 1px solid var(--accent-teal); }
+        .error-box.right .label { color: var(--accent-teal); }
+        .error-box p { color: var(--text-secondary); line-height: 1.4; }
+
+        /* TAKEAWAY */
+        .takeaway { background: linear-gradient(135deg, var(--dark-warm) 0%, #2a2a3e 100%); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; }
+        .takeaway-text { font-size: 11px; color: rgba(255, 255, 255, 0.85); line-height: 1.6; }
+        .takeaway-text strong { color: var(--accent-gold); font-weight: 700; }
+
+        /* FOOTER */
+        footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border-light); }
+        .footer-logo { display: flex; align-items: center; gap: 8px; }
+        .footer-logo svg { width: 24px; height: 24px; }
+        .footer-logo-text .footer-name { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-primary); display: block; }
+        .footer-logo-text .footer-tagline { font-size: 8px; color: var(--text-muted); display: block; }
+        .footer-tags { display: flex; gap: 6px; }
+        .footer-tag { font-size: 9px; background: var(--bg-warm); padding: 3px 10px; border-radius: 100px; color: var(--text-muted); border: 1px solid var(--border-light); }
+
+        html { background: #f0ede8; }
+        .web-wrapper { max-width: 210mm; margin: 0 auto; padding: 32px 16px; }
+
+        @media (max-width: 800px) {
+            body { width: 100% !important; padding: 16px !important; }
+            .main-grid, .cases-grid, .error-content { grid-template-columns: 1fr !important; }
+            h1 { font-size: 22px !important; }
+            .web-wrapper { padding: 16px 8px; }
+        }
+
+        .back-bar { position: sticky; top: 0; z-index: 100; background: rgba(61, 58, 54, 0.95); backdrop-filter: blur(10px); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; border-radius: 0 0 12px 12px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; color: white; text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 100px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+        .back-btn svg { width: 14px; height: 14px; }
+        .back-bar-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.8px; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .back-bar { display: none; }
+            .web-wrapper { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="web-wrapper">
+
+    <div class="back-bar">
+        <a href="../" class="back-btn">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Todos los Playbooks
+        </a>
+        <span class="back-bar-label">Playbook Vol. 11</span>
+    </div>
+
+
+    <!-- SECCIÓN 1: HEADER -->
+    <header>
+        <div class="header-main">
+            <div class="header-avatar">
+                <!-- Pixel principal con gafas y red neuronal -->
+                <svg width="95" height="110" viewBox="0 0 130 140" fill="none">
+                    <ellipse cx="30" cy="95" rx="10" ry="16" fill="#C94A3A" transform="rotate(10 30 95)"/>
+                    <ellipse cx="32" cy="94" rx="6" ry="12" fill="#B84039" transform="rotate(10 32 94)"/>
+                    <ellipse cx="100" cy="95" rx="10" ry="16" fill="#C94A3A" transform="rotate(-10 100 95)"/>
+                    <ellipse cx="98" cy="94" rx="6" ry="12" fill="#B84039" transform="rotate(-10 98 94)"/>
+                    <ellipse cx="65" cy="95" rx="38" ry="33" fill="url(#hBody)"/>
+                    <ellipse cx="65" cy="100" rx="26" ry="23" fill="#FFF0EE"/>
+                    <circle cx="50" cy="88" r="5" fill="#E85D4C" fill-opacity="0.7"/>
+                    <circle cx="65" cy="82" r="5" fill="#E85D4C" fill-opacity="0.7"/>
+                    <circle cx="80" cy="88" r="5" fill="#E85D4C" fill-opacity="0.7"/>
+                    <circle cx="55" cy="100" r="5" fill="#E85D4C" fill-opacity="0.5"/>
+                    <circle cx="75" cy="100" r="5" fill="#E85D4C" fill-opacity="0.5"/>
+                    <circle cx="65" cy="112" r="6" fill="#D4A853"/>
+                    <line x1="50" y1="88" x2="65" y2="82" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="80" y1="88" x2="65" y2="82" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.5"/>
+                    <line x1="50" y1="88" x2="55" y2="100" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="80" y1="88" x2="75" y2="100" stroke="#E85D4C" stroke-width="2" stroke-opacity="0.4"/>
+                    <line x1="55" y1="100" x2="65" y2="112" stroke="#D4A853" stroke-width="2" stroke-opacity="0.6"/>
+                    <line x1="75" y1="100" x2="65" y2="112" stroke="#D4A853" stroke-width="2" stroke-opacity="0.6"/>
+                    <ellipse cx="65" cy="50" rx="33" ry="28" fill="url(#hHead)"/>
+                    <path d="M37 35L32 17L47 30Z" fill="#C94A3A"/>
+                    <path d="M93 35L98 17L83 30Z" fill="#C94A3A"/>
+                    <circle cx="50" cy="48" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/>
+                    <circle cx="80" cy="48" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/>
+                    <circle cx="52" cy="50" r="6" fill="#3D3A36"/>
+                    <circle cx="82" cy="50" r="6" fill="#3D3A36"/>
+                    <circle cx="54" cy="48" r="2" fill="white"/>
+                    <circle cx="84" cy="48" r="2" fill="white"/>
+                    <path d="M37 48C37 48 42 43 50 43" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M93 48C93 48 88 43 80 43" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="62" y1="48" x2="68" y2="48" stroke="#D4A853" stroke-width="3"/>
+                    <path d="M65 60L61 69L65 67L69 69Z" fill="#D4A853"/>
+                    <path d="M50 123L45 133M50 123L50 133M50 123L55 133" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M80 123L75 133M80 123L80 133M80 123L85 133" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="hBody" x1="27" y1="62" x2="103" y2="128"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient>
+                        <linearGradient id="hHead" x1="32" y1="22" x2="98" y2="78"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
+            <div class="header-text">
+                <div class="header-top">
+                    <div class="area-logo">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect width="40" height="40" rx="10" fill="url(#logoGrad)"/>
+                            <circle cx="12" cy="15" r="3" fill="white"/>
+                            <circle cx="12" cy="20" r="3" fill="white"/>
+                            <circle cx="12" cy="25" r="3" fill="white"/>
+                            <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                            <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                            <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient></defs>
+                        </svg>
+                        <div class="area-logo-text">
+                            <span class="logo-name">Advanced Analytics</span>
+                            <span class="logo-tagline">Data Science & ML</span>
+                        </div>
+                    </div>
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Playbook
+                        <span class="badge-vol">Vol. 11</span>
+                    </div>
+                </div>
+                <h1>¿Cuándo usar <span class="highlight">Regresión</span> vs Clasificación?</h1>
+                <p class="subtitle">La primera decisión en cualquier modelo. Equivocarte aquí invalida todo lo demás.</p>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- SECCIÓN 2: EL PROBLEMA -->
+    <div class="problem-section">
+        <!-- Pixel Pensando -->
+        <svg width="46" height="53" viewBox="0 0 120 140" fill="none">
+            <ellipse cx="60" cy="95" rx="36" ry="31" fill="#E85D4C"/>
+            <ellipse cx="32" cy="70" rx="9" ry="16" fill="#C94A3A" transform="rotate(-30 32 70)"/>
+            <ellipse cx="35" cy="72" rx="6" ry="11" fill="#E85D4C" transform="rotate(-30 35 72)"/>
+            <ellipse cx="92" cy="88" rx="9" ry="15" fill="#C94A3A" transform="rotate(15 92 88)"/>
+            <ellipse cx="90" cy="86" rx="6" ry="11" fill="#E85D4C" transform="rotate(15 90 86)"/>
+            <ellipse cx="60" cy="100" rx="22" ry="19" fill="#FFF0EE"/>
+            <circle cx="50" cy="92" r="4" fill="#E85D4C" fill-opacity="0.5"/>
+            <circle cx="60" cy="87" r="4" fill="#E85D4C" fill-opacity="0.5"/>
+            <circle cx="70" cy="92" r="4" fill="#E85D4C" fill-opacity="0.5"/>
+            <circle cx="60" cy="106" r="5" fill="#D4A853"/>
+            <ellipse cx="60" cy="50" rx="32" ry="27" fill="#E85D4C"/>
+            <path d="M33 35L29 19L43 32Z" fill="#C94A3A"/>
+            <path d="M87 35L91 19L77 32Z" fill="#C94A3A"/>
+            <circle cx="46" cy="48" r="12" fill="white"/>
+            <circle cx="74" cy="48" r="12" fill="white"/>
+            <circle cx="48" cy="45" r="5" fill="#3D3A36"/>
+            <circle cx="76" cy="45" r="5" fill="#3D3A36"/>
+            <circle cx="49" cy="43" r="1.5" fill="white"/>
+            <circle cx="77" cy="43" r="1.5" fill="white"/>
+            <path d="M54 67C54 67 60 67 66 67" stroke="#D4A853" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M60 59L57 66L60 64L63 66Z" fill="#D4A853"/>
+            <text x="88" y="26" fill="#D4A853" font-size="14" font-weight="bold">?</text>
+        </svg>
+        <div class="problem-content">
+            <h2>🎯 El problema que resuelve</h2>
+            <p>Los equipos piden modelos sin definir bien qué tipo de respuesta necesitan. <strong>Elegir la técnica equivocada invalida el modelo completo, sin importar cuántos datos tengas.</strong> La pregunta de negocio determina la herramienta, no al revés.</p>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 3: REGRESIÓN vs CLASIFICACIÓN -->
+    <div class="main-grid">
+        <!-- Regresión -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon positive">
+                    <svg width="26" height="26" viewBox="0 0 50 50" fill="none">
+                        <ellipse cx="25" cy="30" rx="14" ry="12" fill="#2D9C9C"/>
+                        <ellipse cx="25" cy="20" rx="13" ry="11" fill="#2D9C9C"/>
+                        <circle cx="19" cy="18" r="4" fill="white"/><circle cx="31" cy="18" r="4" fill="white"/>
+                        <circle cx="20" cy="19" r="2" fill="#3D3A36"/><circle cx="32" cy="19" r="2" fill="#3D3A36"/>
+                        <path d="M20 26C20 26 25 30 30 26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="card-title positive">📏 Regresión — "¿Cuánto?"</div>
+                <div class="card-pixel">
+                    <!-- Pixel Feliz Teal -->
+                    <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                        <ellipse cx="65" cy="95" rx="34" ry="29" fill="#2D9C9C"/>
+                        <ellipse cx="35" cy="88" rx="9" ry="15" fill="#238080" transform="rotate(-15 35 88)"/>
+                        <ellipse cx="37" cy="86" rx="6" ry="11" fill="#2D9C9C" transform="rotate(-15 37 86)"/>
+                        <ellipse cx="102" cy="70" rx="9" ry="17" fill="#238080" transform="rotate(60 102 70)"/>
+                        <ellipse cx="100" cy="73" rx="6" ry="12" fill="#2D9C9C" transform="rotate(60 100 73)"/>
+                        <ellipse cx="65" cy="100" rx="21" ry="18" fill="#E8F6F6"/>
+                        <circle cx="55" cy="94" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="90" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                        <circle cx="75" cy="94" r="3" fill="#2D9C9C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="106" r="4" fill="#D4A853"/>
+                        <ellipse cx="65" cy="50" rx="30" ry="25" fill="#2D9C9C"/>
+                        <path d="M40 35L36 21L50 33Z" fill="#238080"/>
+                        <path d="M90 35L94 21L80 33Z" fill="#238080"/>
+                        <circle cx="50" cy="48" r="11" fill="white"/><circle cx="80" cy="48" r="11" fill="white"/>
+                        <circle cx="52" cy="50" r="5" fill="#3D3A36"/><circle cx="82" cy="50" r="5" fill="#3D3A36"/>
+                        <circle cx="53" cy="48" r="1.5" fill="white"/><circle cx="83" cy="48" r="1.5" fill="white"/>
+                        <path d="M55 64C55 64 65 72 75 64" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                    </svg>
+                </div>
+            </div>
+            <ul class="item-list">
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>La respuesta es un número continuo</strong><span>Soles, cajas, %, días, toneladas</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Necesitas magnitud exacta</strong><span>Para planificar producción, presupuesto o precios</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Decisión depende del valor</strong><span>"¿Cuánto producir?" necesita un número, no una etiqueta</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Mides error en la misma unidad</strong><span>Si fallas en 500 cajas, el impacto es concreto</span></div></li>
+                <li><div class="list-icon positive">✓</div><div class="list-text"><strong>Ejemplos Alicorp</strong><span>Ventas de Don Vittorio por semana · Impacto en soles de una promo · Precio óptimo de AlaCena</span></div></li>
+            </ul>
+        </div>
+
+        <!-- Clasificación -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon negative">
+                    <svg width="26" height="26" viewBox="0 0 50 50" fill="none">
+                        <ellipse cx="25" cy="30" rx="14" ry="12" fill="#E85D4C"/>
+                        <ellipse cx="25" cy="20" rx="13" ry="11" fill="#E85D4C"/>
+                        <circle cx="19" cy="18" r="4" fill="white"/><circle cx="31" cy="18" r="4" fill="white"/>
+                        <circle cx="20" cy="19" r="2" fill="#3D3A36"/><circle cx="32" cy="19" r="2" fill="#3D3A36"/>
+                        <path d="M20 28C20 28 25 24 30 28" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="card-title negative">🏷️ Clasificación — "¿A qué grupo?"</div>
+                <div class="card-pixel">
+                    <!-- Pixel Preocupado -->
+                    <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                        <ellipse cx="65" cy="95" rx="34" ry="29" fill="#E85D4C"/>
+                        <ellipse cx="50" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(25 50 82)"/>
+                        <ellipse cx="52" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(25 52 84)"/>
+                        <ellipse cx="80" cy="82" rx="9" ry="15" fill="#C94A3A" transform="rotate(-25 80 82)"/>
+                        <ellipse cx="78" cy="84" rx="6" ry="11" fill="#E85D4C" transform="rotate(-25 78 84)"/>
+                        <ellipse cx="65" cy="100" rx="21" ry="18" fill="#FFF0EE"/>
+                        <circle cx="55" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="90" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                        <circle cx="75" cy="94" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                        <circle cx="65" cy="106" r="4" fill="#D4A853"/>
+                        <ellipse cx="65" cy="50" rx="30" ry="25" fill="#E85D4C"/>
+                        <path d="M40 35L36 21L50 33Z" fill="#C94A3A"/>
+                        <path d="M90 35L94 21L80 33Z" fill="#C94A3A"/>
+                        <circle cx="50" cy="48" r="11" fill="white"/><circle cx="80" cy="48" r="11" fill="white"/>
+                        <circle cx="52" cy="50" r="5" fill="#3D3A36"/><circle cx="82" cy="50" r="5" fill="#3D3A36"/>
+                        <circle cx="53" cy="48" r="1.5" fill="white"/><circle cx="83" cy="48" r="1.5" fill="white"/>
+                        <path d="M40 40C44 38 50 38 56 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M90 40C86 38 80 38 74 42" stroke="#C94A3A" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M55 68C55 68 65 62 75 68" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                    </svg>
+                </div>
+            </div>
+            <ul class="item-list">
+                <li><div class="list-icon negative">✓</div><div class="list-text"><strong>La respuesta es una etiqueta</strong><span>Sí/No · Alto/Medio/Bajo · Segmento A/B/C</span></div></li>
+                <li><div class="list-icon negative">✓</div><div class="list-text"><strong>Necesitas asignar a un grupo</strong><span>Para tomar acción diferenciada por tipo de cliente</span></div></li>
+                <li><div class="list-icon negative">✓</div><div class="list-text"><strong>Decisión es por pertenencia</strong><span>"¿A quién visitar primero?" no requiere un número</span></div></li>
+                <li><div class="list-icon negative">✓</div><div class="list-text"><strong>Mides si acertaste la categoría</strong><span>¿Detecté correctamente al cliente en riesgo?</span></div></li>
+                <li><div class="list-icon negative">✓</div><div class="list-text"><strong>Ejemplos Alicorp</strong><span>Bodega en riesgo de churn · Segmento de cliente · ¿Comprará Insuma esta semana?</span></div></li>
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 4: EJEMPLO DE NEGOCIO -->
+    <div class="example-section">
+        <div class="example-header">
+            <div class="example-icon">🧴</div>
+            <div class="example-title">Ejemplo: Gestión de clientes canal tradicional</div>
+            <!-- Pixel Señalando -->
+            <svg width="36" height="42" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="60" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="86" rx="8" ry="14" fill="#C94A3A" transform="rotate(-15 32 86)"/>
+                <ellipse cx="34" cy="84" rx="5" ry="10" fill="#E85D4C" transform="rotate(-15 34 84)"/>
+                <ellipse cx="100" cy="72" rx="8" ry="16" fill="#C94A3A" transform="rotate(70 100 72)"/>
+                <ellipse cx="98" cy="75" rx="5" ry="11" fill="#E85D4C" transform="rotate(70 98 75)"/>
+                <ellipse cx="60" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="52" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="60" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="68" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="60" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="60" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M37 35L33 22L46 33Z" fill="#C94A3A"/>
+                <path d="M83 35L87 22L74 33Z" fill="#C94A3A"/>
+                <circle cx="47" cy="48" r="10" fill="white"/><circle cx="73" cy="48" r="10" fill="white"/>
+                <circle cx="50" cy="50" r="4" fill="#3D3A36"/><circle cx="76" cy="50" r="4" fill="#3D3A36"/>
+                <circle cx="51" cy="48" r="1.5" fill="white"/><circle cx="77" cy="48" r="1.5" fill="white"/>
+                <path d="M53 64C53 64 60 67 67 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M60 57L57 63L60 61L63 63Z" fill="#D4A853"/>
+            </svg>
+        </div>
+
+        <div class="cases-grid">
+            <!-- REGRESIÓN -->
+            <div class="case-card option-a">
+                <div class="case-header">
+                    <span class="case-number">Regresión</span>
+                    <span class="case-label">Planificación de demanda</span>
+                </div>
+                <div class="case-rule"><span>📦</span> "¿Cuántas cajas de Primor pedirá esta bodega?"</div>
+
+                <!-- Gráfico regresión: scatter + línea de tendencia -->
+                <svg viewBox="0 0 260 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin:8px 0;background:#fff;border-radius:8px;border:1px solid #E8E4DD;">
+                    <!-- Ejes -->
+                    <line x1="32" y1="10" x2="32" y2="108" stroke="#E8E4DD" stroke-width="1.5"/>
+                    <line x1="32" y1="108" x2="252" y2="108" stroke="#E8E4DD" stroke-width="1.5"/>
+                    <!-- Grid horizontales -->
+                    <line x1="32" y1="85" x2="252" y2="85" stroke="#F0EDE8" stroke-width="1" stroke-dasharray="3,3"/>
+                    <line x1="32" y1="62" x2="252" y2="62" stroke="#F0EDE8" stroke-width="1" stroke-dasharray="3,3"/>
+                    <line x1="32" y1="39" x2="252" y2="39" stroke="#F0EDE8" stroke-width="1" stroke-dasharray="3,3"/>
+                    <!-- Etiquetas Y -->
+                    <text x="28" y="111" font-size="7" fill="#7a7a8a" text-anchor="end">50</text>
+                    <text x="28" y="88" font-size="7" fill="#7a7a8a" text-anchor="end">100</text>
+                    <text x="28" y="65" font-size="7" fill="#7a7a8a" text-anchor="end">150</text>
+                    <text x="28" y="42" font-size="7" fill="#7a7a8a" text-anchor="end">200</text>
+                    <!-- Etiquetas X (semanas) -->
+                    <text x="52"  y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">Sem1</text>
+                    <text x="102" y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">Sem3</text>
+                    <text x="152" y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">Sem5</text>
+                    <text x="202" y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">Sem7</text>
+                    <!-- Puntos reales (histórico) -->
+                    <circle cx="52"  cy="95" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <circle cx="72"  cy="88" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <circle cx="92"  cy="80" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <circle cx="112" cy="75" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <circle cx="132" cy="68" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <circle cx="152" cy="60" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <circle cx="172" cy="55" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <circle cx="192" cy="48" r="3.5" fill="#E85D4C" opacity="0.7"/>
+                    <!-- Línea de regresión (predicción) -->
+                    <line x1="42" y1="100" x2="220" y2="40" stroke="#2D9C9C" stroke-width="2" stroke-linecap="round"/>
+                    <!-- Punto predicho destacado -->
+                    <circle cx="220" cy="40" r="5" fill="#2D9C9C"/>
+                    <line x1="220" y1="40" x2="220" y2="108" stroke="#2D9C9C" stroke-width="1" stroke-dasharray="3,2"/>
+                    <!-- Etiqueta predicción -->
+                    <rect x="195" y="25" width="52" height="13" rx="4" fill="#2D9C9C"/>
+                    <text x="221" y="35" font-size="7.5" fill="white" text-anchor="middle" font-weight="bold">142 cajas</text>
+                    <!-- Leyenda -->
+                    <circle cx="38" cy="14" r="3" fill="#E85D4C" opacity="0.7"/>
+                    <text x="44" y="17" font-size="7" fill="#7a7a8a">Histórico real</text>
+                    <line x1="90" y1="14" x2="102" y2="14" stroke="#2D9C9C" stroke-width="2"/>
+                    <text x="106" y="17" font-size="7" fill="#7a7a8a">Predicción</text>
+                    <!-- Título eje Y -->
+                    <text x="10" y="70" font-size="7" fill="#7a7a8a" text-anchor="middle" transform="rotate(-90,10,70)">Cajas pedidas</text>
+                </svg>
+
+                <div class="case-detail">🔢 <strong class="a">Respuesta:</strong> 142 cajas — número exacto, planificable</div>
+                <div class="case-result bad">
+                    <span class="result-label">Sin modelo — error promedio</span>
+                    <span class="result-value">±35%</span>
+                    <span class="result-desc">Sobrestock o quiebre de inventario</span>
+                </div>
+            </div>
+
+            <!-- CLASIFICACIÓN -->
+            <div class="case-card option-b">
+                <div class="case-header">
+                    <span class="case-number">Clasificación</span>
+                    <span class="case-label">Priorización de visitas</span>
+                </div>
+                <div class="case-rule"><span>🚨</span> "¿Esta bodega está en riesgo de dejar de comprarnos?"</div>
+
+                <!-- Gráfico clasificación: scatter con grupos coloreados -->
+                <svg viewBox="0 0 260 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin:8px 0;background:#fff;border-radius:8px;border:1px solid #E8E4DD;">
+                    <!-- Ejes -->
+                    <line x1="32" y1="10" x2="32" y2="108" stroke="#E8E4DD" stroke-width="1.5"/>
+                    <line x1="32" y1="108" x2="252" y2="108" stroke="#E8E4DD" stroke-width="1.5"/>
+                    <!-- Etiquetas Y (frecuencia) -->
+                    <text x="28" y="111" font-size="7" fill="#7a7a8a" text-anchor="end">Baja</text>
+                    <text x="28" y="74"  font-size="7" fill="#7a7a8a" text-anchor="end">Media</text>
+                    <text x="28" y="37"  font-size="7" fill="#7a7a8a" text-anchor="end">Alta</text>
+                    <!-- Etiquetas X (ticket promedio) -->
+                    <text x="52"  y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">S/50</text>
+                    <text x="112" y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">S/150</text>
+                    <text x="172" y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">S/250</text>
+                    <text x="232" y="118" font-size="7" fill="#7a7a8a" text-anchor="middle">S/350</text>
+                    <!-- Zona ALTO RIESGO (fondo rojo suave) -->
+                    <rect x="33" y="75" width="95" height="32" rx="4" fill="#FFF0EE" opacity="0.7"/>
+                    <!-- Zona MEDIO RIESGO -->
+                    <rect x="33" y="42" width="95" height="32" rx="4" fill="#FDF8EC" opacity="0.7"/>
+                    <!-- Zona BAJO RIESGO -->
+                    <rect x="128" y="11" width="123" height="95" rx="4" fill="#E8F6F6" opacity="0.5"/>
+                    <!-- Frontera decisión -->
+                    <line x1="128" y1="11" x2="128" y2="108" stroke="#3D3A36" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <!-- Etiqueta frontera -->
+                    <text x="130" y="20" font-size="6.5" fill="#3D3A36" font-weight="bold">Frontera de decisión</text>
+                    <!-- Puntos ALTO RIESGO (coral) -->
+                    <circle cx="50"  cy="95" r="4" fill="#E85D4C"/>
+                    <circle cx="65"  cy="100" r="4" fill="#E85D4C"/>
+                    <circle cx="80"  cy="90" r="4" fill="#E85D4C"/>
+                    <circle cx="58"  cy="82" r="4" fill="#E85D4C"/>
+                    <circle cx="95"  cy="98" r="4" fill="#E85D4C"/>
+                    <!-- Puntos MEDIO RIESGO (gold) -->
+                    <circle cx="55"  cy="60" r="4" fill="#D4A853"/>
+                    <circle cx="75"  cy="55" r="4" fill="#D4A853"/>
+                    <circle cx="100" cy="65" r="4" fill="#D4A853"/>
+                    <circle cx="115" cy="58" r="4" fill="#D4A853"/>
+                    <circle cx="90"  cy="48" r="4" fill="#D4A853"/>
+                    <!-- Puntos BAJO RIESGO (teal) -->
+                    <circle cx="145" cy="35" r="4" fill="#2D9C9C"/>
+                    <circle cx="165" cy="28" r="4" fill="#2D9C9C"/>
+                    <circle cx="185" cy="42" r="4" fill="#2D9C9C"/>
+                    <circle cx="200" cy="22" r="4" fill="#2D9C9C"/>
+                    <circle cx="220" cy="35" r="4" fill="#2D9C9C"/>
+                    <circle cx="240" cy="50" r="4" fill="#2D9C9C"/>
+                    <!-- Punto a clasificar (estrella) -->
+                    <circle cx="72" cy="92" r="6" fill="none" stroke="#3D3A36" stroke-width="2"/>
+                    <circle cx="72" cy="92" r="2.5" fill="#3D3A36"/>
+                    <!-- Etiqueta resultado -->
+                    <rect x="40" y="70" width="56" height="12" rx="3" fill="#E85D4C"/>
+                    <text x="68" y="79" font-size="6.5" fill="white" text-anchor="middle" font-weight="bold">⚠ ALTO RIESGO</text>
+                    <!-- Leyendas -->
+                    <circle cx="38" cy="14" r="3" fill="#E85D4C"/>
+                    <text x="44" y="17" font-size="6.5" fill="#7a7a8a">Alto</text>
+                    <circle cx="70" cy="14" r="3" fill="#D4A853"/>
+                    <text x="76" y="17" font-size="6.5" fill="#7a7a8a">Medio</text>
+                    <circle cx="105" cy="14" r="3" fill="#2D9C9C"/>
+                    <text x="111" y="17" font-size="6.5" fill="#7a7a8a">Bajo riesgo</text>
+                    <!-- Títulos ejes -->
+                    <text x="10" y="70" font-size="7" fill="#7a7a8a" text-anchor="middle" transform="rotate(-90,10,70)">Frecuencia compra</text>
+                    <text x="142" y="127" font-size="7" fill="#7a7a8a" text-anchor="middle">Ticket promedio</text>
+                </svg>
+
+                <div class="case-detail">🏷️ <strong class="b">Respuesta:</strong> ALTO RIESGO → asignar asesor esta semana</div>
+                <div class="case-result good">
+                    <span class="result-label">Con modelo — retención lograda</span>
+                    <span class="result-value">+25%</span>
+                    <span class="result-desc">Más clientes retenidos a tiempo</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-insight">
+            <span>💡</span>
+            <div><strong>La clave:</strong> Ambas preguntas usan los mismos datos del cliente, pero la respuesta que necesita el negocio define todo. <em>Si necesitas un número → regresión. Si necesitas una acción diferenciada → clasificación.</em></div>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 5: ERROR COMÚN -->
+    <div class="error-section">
+        <div class="error-header">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">Error común: Convertir ventas en "Alto / Medio / Bajo" para simplificar</div>
+            <!-- Pixel Confundido -->
+            <svg width="38" height="44" viewBox="0 0 130 140" fill="none">
+                <ellipse cx="65" cy="95" rx="32" ry="27" fill="#E85D4C"/>
+                <ellipse cx="32" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(-40 32 72)"/>
+                <ellipse cx="35" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(-40 35 75)"/>
+                <ellipse cx="98" cy="72" rx="8" ry="14" fill="#C94A3A" transform="rotate(40 98 72)"/>
+                <ellipse cx="95" cy="75" rx="5" ry="10" fill="#E85D4C" transform="rotate(40 95 75)"/>
+                <ellipse cx="65" cy="100" rx="19" ry="16" fill="#FFF0EE"/>
+                <circle cx="55" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="91" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="75" cy="95" r="3" fill="#E85D4C" fill-opacity="0.5"/>
+                <circle cx="65" cy="105" r="4" fill="#D4A853"/>
+                <ellipse cx="65" cy="50" rx="28" ry="24" fill="#E85D4C"/>
+                <path d="M40 35L36 22L50 33Z" fill="#C94A3A"/>
+                <path d="M90 35L94 22L80 33Z" fill="#C94A3A"/>
+                <circle cx="50" cy="48" r="10" fill="white"/><circle cx="80" cy="48" r="10" fill="white"/>
+                <circle cx="52" cy="46" r="4" fill="#3D3A36"/><circle cx="82" cy="52" r="4" fill="#3D3A36"/>
+                <circle cx="53" cy="44" r="1.5" fill="white"/><circle cx="83" cy="50" r="1.5" fill="white"/>
+                <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+                <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"/>
+                <text x="95" y="30" fill="white" font-size="11" font-weight="bold">?</text>
+                <text x="25" y="35" fill="white" font-size="9" font-weight="bold">!</text>
+            </svg>
+        </div>
+        <div class="error-content">
+            <div class="error-box wrong">
+                <div class="label">❌ Lo que hacen</div>
+                <p>"Las ventas proyectadas son <strong>138 cajas</strong>... mejor ponemos 'Alto' para que se entienda."</p>
+            </div>
+            <div class="error-box right">
+                <div class="label">✓ La realidad</div>
+                <p>Perdiste información útil. <strong>El modelo ya no sabe si 138 es mejor o peor que 120.</strong> Usa el número si el negocio lo necesita para decidir.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SECCIÓN 6: TAKEAWAY -->
+    <div class="takeaway">
+        <!-- Pixel Eureka dorado -->
+        <svg width="50" height="58" viewBox="0 0 130 150" fill="none">
+            <ellipse cx="65" cy="105" rx="32" ry="27" fill="#D4A853"/>
+            <ellipse cx="38" cy="100" rx="8" ry="14" fill="#C4983F" transform="rotate(-15 38 100)"/>
+            <ellipse cx="40" cy="98" rx="5" ry="10" fill="#D4A853" transform="rotate(-15 40 98)"/>
+            <ellipse cx="100" cy="78" rx="8" ry="16" fill="#C4983F" transform="rotate(50 100 78)"/>
+            <ellipse cx="97" cy="82" rx="5" ry="11" fill="#D4A853" transform="rotate(50 97 82)"/>
+            <ellipse cx="65" cy="110" rx="19" ry="16" fill="#FDF8EC"/>
+            <circle cx="55" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="65" cy="101" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="75" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/>
+            <circle cx="65" cy="115" r="4" fill="#E85D4C"/>
+            <ellipse cx="65" cy="60" rx="28" ry="24" fill="#D4A853"/>
+            <path d="M42 45L38 32L52 43Z" fill="#C4983F"/>
+            <path d="M88 45L92 32L78 43Z" fill="#C4983F"/>
+            <circle cx="52" cy="58" r="10" fill="white"/><circle cx="78" cy="58" r="10" fill="white"/>
+            <circle cx="54" cy="60" r="5" fill="#D4A853"/><circle cx="80" cy="60" r="5" fill="#D4A853"/>
+            <circle cx="54" cy="60" r="2" fill="white"/><circle cx="80" cy="60" r="2" fill="white"/>
+            <path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            <path d="M65 67L62 74L65 72L68 74Z" fill="#C4983F"/>
+            <circle cx="65" cy="12" r="10" fill="white" fill-opacity="0.95"/>
+            <path d="M65 2V7M55 12H60M70 12H75M57 5L60 8M73 5L70 8" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="takeaway-text">
+            <strong>Regla de oro:</strong> Antes de modelar, hazte UNA pregunta: ¿la respuesta que necesito el negocio es un <strong style="color:#2D9C9C">número</strong> o una <strong style="color:#E85D4C">etiqueta</strong>? Si es un número (ventas, impacto, precio) → regresión. Si es una categoría (riesgo, segmento, propensión) → clasificación. Todo lo demás es ejecución.
+        </div>
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-logo">
+            <svg viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="10" fill="url(#fGrad)"/>
+                <circle cx="12" cy="15" r="3" fill="white"/>
+                <circle cx="12" cy="20" r="3" fill="white"/>
+                <circle cx="12" cy="25" r="3" fill="white"/>
+                <circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/>
+                <circle cx="28" cy="20" r="4" fill="#D4A853"/>
+                <defs><linearGradient id="fGrad" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#E85D4C"/><stop offset="1" stop-color="#C94A3A"/></linearGradient></defs>
+            </svg>
+            <div class="footer-logo-text">
+                <span class="footer-name">Advanced Analytics</span>
+                <span class="footer-tagline">Data Science & ML</span>
+            </div>
+        </div>
+        <div class="footer-tags">
+            <span class="footer-tag">Machine Learning</span>
+            <span class="footer-tag">Estadística</span>
+            <span class="footer-tag">Playbook Vol. 11</span>
+        </div>
+    </footer>
+
+</div>
+</body>
+</html>
