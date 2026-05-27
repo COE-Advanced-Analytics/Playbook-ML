@@ -1,0 +1,1044 @@
+​<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Intervalo de Confianza: No confíes en un solo número | Playbook Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        /* ╔══════════════════════════════════════╗
+           ║  🎨 SISTEMA DE DISEÑO — NO CAMBIAR   ║
+           ╚══════════════════════════════════════╝ */
+
+        :root {
+            /* Fondos */
+            --bg-cream: #FFFFFF;
+            --bg-warm: #F5F5F5;
+            --bg-card: #FFFFFF;
+
+            /* Textos */
+            --text-primary: #3D3A36;
+            --text-secondary: #4a4a5a;
+            --text-muted: #7a7a8a;
+
+            /* Acentos — Coral (negativo/alerta) */
+            --accent-coral: #E85D4C;
+            --accent-coral-dark: #C94A3A;
+            --accent-coral-light: #FFF0EE;
+
+            /* Acentos — Teal (positivo/solución) */
+            --accent-teal: #2D9C9C;
+            --accent-teal-dark: #238080;
+            --accent-teal-light: #E8F6F6;
+
+            /* Acentos — Gold (neutral/insight) */
+            --accent-gold: #D4A853;
+            --accent-gold-dark: #C4983F;
+            --accent-gold-light: #FDF8EC;
+
+            /* Otros */
+            --dark-warm: #3D3A36;
+            --border-light: #E8E4DD;
+            --shadow-sm: 0 2px 8px rgba(26, 26, 46, 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-primary);
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 24px;
+            line-height: 1.5;
+        }
+
+        /* ══════════════════════════════
+           SECCIÓN 1: HEADER
+           ══════════════════════════════ */
+
+        header {
+            background: linear-gradient(135deg, var(--bg-warm) 0%, var(--bg-cream) 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            right: -20px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--accent-coral-light) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-avatar { flex-shrink: 0; }
+        .header-text { flex: 1; position: relative; z-index: 1; }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .area-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .area-logo svg { width: 30px; height: 30px; }
+        .logo-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: block;
+        }
+        .logo-tagline {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent-coral);
+            text-transform: uppercase;
+        }
+        .badge-dot { width: 6px; height: 6px; background: var(--accent-coral); border-radius: 50%; flex-shrink: 0; }
+        .badge-text { color: var(--accent-coral); font-size: 10px; font-weight: 600; }
+        .badge-vol { background: var(--accent-coral); color: white; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        h1 .highlight { color: var(--accent-coral); }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            max-width: 500px;
+        }
+
+        /* ══════════════════════════════
+           SECCIÓN 2: PROBLEMA QUE RESUELVE
+           ══════════════════════════════ */
+
+        .problem-section-with-icon {
+            background: var(--bg-card);
+            border-left: 5px solid var(--accent-gold);
+            border-radius: 0 14px 14px 0;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .problem-icon {
+            flex-shrink: 0;
+        }
+
+        .problem-icon svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        .problem-content {
+            flex: 1;
+        }
+
+        .problem-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent-coral);
+            margin-bottom: 8px;
+        }
+
+        .problem-content p {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .problem-content strong {
+            color: var(--text-primary);
+        }
+
+        /* ══════════════════════════════
+           SECCIÓN 3: SOLUCIÓN
+           ══════════════════════════════ */
+
+        /* ══════════════════════════════
+           SECCIÓN 3: MITOS VS VERDAD
+           ══════════════════════════════ */
+
+        .myths-section {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .myths-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .myth-card {
+            background: var(--bg-warm);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid;
+        }
+
+        .myth-card.myth-wrong {
+            border-left-color: var(--accent-coral);
+        }
+
+        .myth-card.myth-right {
+            border-left-color: var(--accent-teal);
+        }
+
+        .myth-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .myth-header svg {
+            flex-shrink: 0;
+        }
+
+        .myth-icon {
+            font-size: 18px;
+        }
+
+        .myth-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .myth-item {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        .myth-bullet {
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .myth-card.myth-wrong .myth-bullet {
+            color: var(--accent-coral);
+        }
+
+        .myth-card.myth-right .myth-bullet {
+            color: var(--accent-teal);
+        }
+
+        .myth-item strong {
+            color: var(--text-primary);
+        }
+
+        /* ══════════════════════════════
+           SECCIÓN 4: EJEMPLOS
+           ══════════════════════════════ */
+
+        .example-section {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .example-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .example-icon {
+            font-size: 24px;
+        }
+
+        .example-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .case-card {
+            background: var(--bg-warm);
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid var(--border-light);
+        }
+
+        .case-card.option-a {
+            border-left: 3px solid var(--accent-coral);
+        }
+
+        .case-card.option-b {
+            border-left: 3px solid var(--accent-teal);
+        }
+
+        .case-header {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .case-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .case-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .case-rule {
+            background: var(--bg-card);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            border-left: 2px solid var(--accent-gold);
+        }
+
+        .case-detail {
+            font-size: 11px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            padding-left: 4px;
+        }
+
+        .case-detail strong.a {
+            color: var(--accent-coral);
+        }
+
+        .case-detail strong.b {
+            color: var(--accent-teal);
+        }
+
+        .case-result {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border-left: 3px solid;
+        }
+
+        .case-result.good {
+            border-left-color: var(--accent-teal);
+            background: var(--accent-teal-light);
+        }
+
+        .case-result.bad {
+            border-left-color: var(--accent-coral);
+            background: var(--accent-coral-light);
+        }
+
+        .result-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .result-value {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-primary);
+        }
+
+        .result-desc {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .example-insight {
+            background: var(--accent-gold-light);
+            border-left: 3px solid var(--accent-gold);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .example-insight span {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        /* ══════════════════════════════
+           SECCIÓN 5: ERRORES COMUNES
+           ══════════════════════════════ */
+
+        .error-section {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .error-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .error-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .error-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent-coral);
+        }
+
+        .error-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .error-box {
+            background: var(--bg-warm);
+            padding: 12px;
+            border-radius: 10px;
+            border-left: 3px solid;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .error-box.wrong {
+            border-left-color: var(--accent-coral);
+        }
+
+        .error-box.right {
+            border-left-color: var(--accent-teal);
+        }
+
+        .error-box .label {
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .error-box p {
+            color: var(--text-secondary);
+        }
+
+        /* ══════════════════════════════
+           SECCIÓN 6: TAKEAWAY
+           ══════════════════════════════ */
+
+        .takeaway {
+            background: var(--accent-gold-light);
+            border: 1px solid var(--accent-gold);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .takeaway svg {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+        }
+
+        .takeaway-text {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* ══════════════════════════════
+           SECCIÓN 7: FOOTER
+           ══════════════════════════════ */
+
+        footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo svg {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+
+        .footer-logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .footer-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .footer-tagline {
+            font-size: 9px;
+            color: var(--text-muted);
+        }
+
+        .footer-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer-tag {
+            background: var(--accent-coral-light);
+            color: var(--accent-coral);
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        /* ══════════════════════════════
+           NAVEGACIÓN SUPERIOR
+           ══════════════════════════════ */
+
+        .back-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(61, 58, 54, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 0 0 12px 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            text-decoration: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .back-btn svg { width: 14px; height: 14px; }
+
+        .back-bar-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .back-bar { display: none; }
+            .web-wrapper { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="web-wrapper">
+        <!-- Barra de navegación — 🔄 CAMBIAR: Vol. X -->
+        <div class="back-bar">
+            <a class="back-btn" href="../">
+                <svg fill="none" viewbox="0 0 16 16"><path d="M10 4L6 8l4 4" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                Todos los Playbooks
+            </a>
+            <span class="back-bar-label">Playbook Vol. 14</span>
+        </div>
+        <!-- ╔═══════════════════════════════════════════════╗
+             ║  SECCIÓN 1: HEADER                            ║
+             ║  🦉 Pixel: Pensativo (icono cabeza)           ║
+             ╚═══════════════════════════════════════════════╝ -->
+        <header>
+            <div class="header-main">
+                <div class="header-avatar">
+<svg fill="none" height="110" viewbox="0 0 130 140" width="95">
+<ellipse cx="30" cy="95" fill="#C94A3A" rx="10" ry="16" transform="rotate(10 30 95)"></ellipse>
+<ellipse cx="32" cy="94" fill="#B84039" rx="6" ry="12" transform="rotate(10 32 94)"></ellipse>
+<ellipse cx="100" cy="95" fill="#C94A3A" rx="10" ry="16" transform="rotate(-10 100 95)"></ellipse>
+<ellipse cx="98" cy="94" fill="#B84039" rx="6" ry="12" transform="rotate(-10 98 94)"></ellipse>
+<ellipse cx="65" cy="95" fill="url(#hBody)" rx="38" ry="33"></ellipse>
+<ellipse cx="65" cy="100" fill="#FFF0EE" rx="26" ry="23"></ellipse>
+<circle cx="50" cy="88" fill="#E85D4C" fill-opacity="0.7" r="5"></circle>
+<circle cx="65" cy="82" fill="#E85D4C" fill-opacity="0.7" r="5"></circle>
+<circle cx="80" cy="88" fill="#E85D4C" fill-opacity="0.7" r="5"></circle>
+<circle cx="55" cy="100" fill="#E85D4C" fill-opacity="0.5" r="5"></circle>
+<circle cx="75" cy="100" fill="#E85D4C" fill-opacity="0.5" r="5"></circle>
+<circle cx="65" cy="112" fill="#D4A853" r="6"></circle>
+<line stroke="#E85D4C" stroke-opacity="0.5" stroke-width="2" x1="50" x2="65" y1="88" y2="82"></line>
+<line stroke="#E85D4C" stroke-opacity="0.5" stroke-width="2" x1="80" x2="65" y1="88" y2="82"></line>
+<line stroke="#E85D4C" stroke-opacity="0.4" stroke-width="2" x1="50" x2="55" y1="88" y2="100"></line>
+<line stroke="#E85D4C" stroke-opacity="0.4" stroke-width="2" x1="80" x2="75" y1="88" y2="100"></line>
+<line stroke="#D4A853" stroke-opacity="0.6" stroke-width="2" x1="55" x2="65" y1="100" y2="112"></line>
+<line stroke="#D4A853" stroke-opacity="0.6" stroke-width="2" x1="75" x2="65" y1="100" y2="112"></line>
+<ellipse cx="65" cy="50" fill="url(#hHead)" rx="33" ry="28"></ellipse>
+<path d="M37 35L32 17L47 30Z" fill="#C94A3A"></path>
+<path d="M93 35L98 17L83 30Z" fill="#C94A3A"></path>
+<circle cx="50" cy="48" fill="white" r="13" stroke="#3D3A36" stroke-width="2"></circle>
+<circle cx="80" cy="48" fill="white" r="13" stroke="#3D3A36" stroke-width="2"></circle>
+<circle cx="52" cy="50" fill="#3D3A36" r="6"></circle>
+<circle cx="82" cy="50" fill="#3D3A36" r="6"></circle>
+<circle cx="54" cy="48" fill="white" r="2"></circle>
+<circle cx="84" cy="48" fill="white" r="2"></circle>
+<path d="M37 48C37 48 42 43 50 43" stroke="#D4A853" stroke-linecap="round" stroke-width="3"></path>
+<path d="M93 48C93 48 88 43 80 43" stroke="#D4A853" stroke-linecap="round" stroke-width="3"></path>
+<line stroke="#D4A853" stroke-width="3" x1="62" x2="68" y1="48" y2="48"></line>
+<path d="M65 60L61 69L65 67L69 69Z" fill="#D4A853"></path>
+<path d="M50 123L45 133M50 123L50 133M50 123L55 133" stroke="#D4A853" stroke-linecap="round" stroke-width="3"></path>
+<path d="M80 123L75 133M80 123L80 133M80 123L85 133" stroke="#D4A853" stroke-linecap="round" stroke-width="3"></path>
+<defs>
+<lineargradient id="hBody" x1="27" x2="103" y1="62" y2="128"><stop stop-color="#E85D4C"></stop><stop offset="1" stop-color="#C94A3A"></stop></lineargradient>
+<lineargradient id="hHead" x1="32" x2="98" y1="22" y2="78"><stop stop-color="#E85D4C"></stop><stop offset="1" stop-color="#C94A3A"></stop></lineargradient>
+</defs>
+</svg>
+</div>
+                <div class="header-text">
+                    <div class="header-top">
+                        <div class="area-logo">
+                            <svg fill="none" viewbox="0 0 40 40">
+                                <rect fill="url(#fGrad)" height="40" rx="10" width="40"></rect>
+                                <circle cx="12" cy="15" fill="white" r="3"></circle>
+                                <circle cx="12" cy="20" fill="white" r="3"></circle>
+                                <circle cx="12" cy="25" fill="white" r="3"></circle>
+                                <circle cx="20" cy="17" fill="white" fill-opacity="0.7" r="3"></circle>
+                                <circle cx="20" cy="23" fill="white" fill-opacity="0.7" r="3"></circle>
+                                <circle cx="28" cy="20" fill="#D4A853" r="4"></circle>
+                                <defs><lineargradient id="fGrad" x1="0" x2="40" y1="0" y2="40"><stop stop-color="#E85D4C"></stop><stop offset="1" stop-color="#C94A3A"></stop></lineargradient></defs>
+                            </svg>
+                            <div>
+                                <span class="logo-name">Advanced Analytics</span>
+                                <span class="logo-tagline">Data Science & ML</span>
+                            </div>
+                        </div>
+                        <div class="badge">
+                            <span class="badge-dot"></span>
+                            <span class="badge-text">PLAYBOOK</span>
+                            <span class="badge-vol">VOL. 14</span>
+                        </div>
+                    </div>
+                    <h1>¿Qué es un <span class="highlight">intervalo de confianza?</span></h1>
+                    <p class="subtitle">Por qué un solo número nunca cuenta la historia completa. Cómo interpretar rangos, márgenes de error y niveles de confianza para tomar mejores decisiones.</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- ╔═══════════════════════════════════════════════╗
+             ║  SECCIÓN 2: PROBLEMA QUE RESUELVE             ║
+             ║  🦉 Pixel: Preocupado / pensativo             ║
+             ╚═══════════════════════════════════════════════╝ -->
+        <div class="problem-section-with-icon">
+            <div class="problem-icon">
+                <svg fill="none" height="48" viewbox="0 0 130 140" width="48">
+                    <!-- Emoticono preocupado -->
+                    <ellipse cx="65" cy="95" fill="#E85D4C" rx="32" ry="27"></ellipse>
+                    <ellipse cx="32" cy="86" fill="#C94A3A" rx="8" ry="14" transform="rotate(-15 32 86)"></ellipse>
+                    <ellipse cx="35" cy="84" fill="#E85D4C" rx="5" ry="10" transform="rotate(-15 35 84)"></ellipse>
+                    <ellipse cx="98" cy="86" fill="#C94A3A" rx="8" ry="14" transform="rotate(15 98 86)"></ellipse>
+                    <ellipse cx="95" cy="84" fill="#E85D4C" rx="5" ry="10" transform="rotate(15 95 84)"></ellipse>
+                    <ellipse cx="65" cy="100" fill="#FFF0EE" rx="19" ry="16"></ellipse>
+                    <circle cx="55" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="65" cy="91" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="75" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="65" cy="105" fill="#D4A853" r="4"></circle>
+                    <ellipse cx="65" cy="50" fill="#E85D4C" rx="28" ry="24"></ellipse>
+                    <path d="M40 35L36 22L50 33Z" fill="#C94A3A"></path>
+                    <path d="M90 35L94 22L80 33Z" fill="#C94A3A"></path>
+                    <circle cx="50" cy="48" fill="white" r="10"></circle><circle cx="80" cy="48" fill="white" r="10"></circle>
+                    <circle cx="50" cy="48" fill="#3D3A36" r="5"></circle><circle cx="80" cy="48" fill="#3D3A36" r="5"></circle>
+                    <circle cx="50" cy="48" fill="white" r="2"></circle><circle cx="80" cy="48" fill="white" r="2"></circle>
+                    <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-linecap="round" stroke-width="2"></path>
+                    <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"></path>
+                    <ellipse cx="40" cy="60" fill="#C94A3A" rx="5" ry="8" transform="rotate(-30 40 60)"></ellipse>
+                </svg>
+            </div>
+            <div class="problem-content">
+                <h2 class="problem-title">🎯 El problema que resuelve</h2>
+                <p>Se reporta que un cliente tiene una venta promedio de <strong>15 soles</strong> por ticket. Pero ese número es solo un punto. <strong>No sabemos si ese cliente está dentro del rango normal de ventas del canal, o si está por debajo</strong>. Teniendo un rango de confianza, podemos saber si ese número es bueno, malo, o simplemente esperado. <strong>Un solo número no cuenta la historia completa</strong>.</p>
+            </div>
+        </div>
+
+        <!-- ╔═══════════════════════════════════════════════╗
+             ║  SECCIÓN 3: MITOS VS VERDAD                  ║
+             ╚═══════════════════════════════════════════════╝ -->
+        <div class="myths-section">
+            <div class="myths-grid">
+                <div class="myth-card myth-wrong">
+                    <div class="myth-header">
+                        <svg fill="none" height="32" viewbox="0 0 130 140" width="28">
+                            <!-- Emoticono preocupado rojo -->
+                            <ellipse cx="65" cy="95" fill="#E85D4C" rx="32" ry="27"></ellipse>
+                            <ellipse cx="32" cy="86" fill="#C94A3A" rx="8" ry="14" transform="rotate(-15 32 86)"></ellipse>
+                            <ellipse cx="35" cy="84" fill="#E85D4C" rx="5" ry="10" transform="rotate(-15 35 84)"></ellipse>
+                            <ellipse cx="98" cy="86" fill="#C94A3A" rx="8" ry="14" transform="rotate(15 98 86)"></ellipse>
+                            <ellipse cx="95" cy="84" fill="#E85D4C" rx="5" ry="10" transform="rotate(15 95 84)"></ellipse>
+                            <ellipse cx="65" cy="100" fill="#FFF0EE" rx="19" ry="16"></ellipse>
+                            <circle cx="55" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                            <circle cx="65" cy="91" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                            <circle cx="75" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                            <circle cx="65" cy="105" fill="#D4A853" r="4"></circle>
+                            <ellipse cx="65" cy="50" fill="#E85D4C" rx="28" ry="24"></ellipse>
+                            <path d="M40 35L36 22L50 33Z" fill="#C94A3A"></path>
+                            <path d="M90 35L94 22L80 33Z" fill="#C94A3A"></path>
+                            <circle cx="50" cy="48" fill="white" r="10"></circle><circle cx="80" cy="48" fill="white" r="10"></circle>
+                            <circle cx="50" cy="48" fill="#3D3A36" r="5"></circle><circle cx="80" cy="48" fill="#3D3A36" r="5"></circle>
+                            <circle cx="50" cy="48" fill="white" r="2"></circle><circle cx="80" cy="48" fill="white" r="2"></circle>
+                            <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-linecap="round" stroke-width="2"></path>
+                            <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"></path>
+                        </svg>
+                        <span class="myth-title">Lo que NO esperar</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✗</span>
+                        <span>Un número exacto que nunca varíe</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✗</span>
+                        <span>Que el rango sea "la verdad" absoluta 100% del tiempo</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✗</span>
+                        <span>Que desaparezcan todos los riesgos de decisión</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✗</span>
+                        <span>Que el rango sea tan estrecho que todo sea obvio</span>
+                    </div>
+                </div>
+
+                <div class="myth-card myth-right">
+                    <div class="myth-header">
+                        <svg fill="none" height="32" viewbox="0 0 130 140" width="28">
+                            <!-- Emoticono feliz teal -->
+                            <ellipse cx="65" cy="95" fill="#2D9C9C" rx="32" ry="27"></ellipse>
+                            <ellipse cx="32" cy="86" fill="#238080" rx="8" ry="14" transform="rotate(-15 32 86)"></ellipse>
+                            <ellipse cx="35" cy="84" fill="#2D9C9C" rx="5" ry="10" transform="rotate(-15 35 84)"></ellipse>
+                            <ellipse cx="98" cy="72" fill="#238080" rx="8" ry="16" transform="rotate(70 98 72)"></ellipse>
+                            <ellipse cx="95" cy="75" fill="#2D9C9C" rx="5" ry="11" transform="rotate(70 95 75)"></ellipse>
+                            <ellipse cx="65" cy="100" fill="#E8F6F6" rx="19" ry="16"></ellipse>
+                            <circle cx="55" cy="95" fill="#2D9C9C" fill-opacity="0.5" r="3"></circle>
+                            <circle cx="65" cy="91" fill="#2D9C9C" fill-opacity="0.5" r="3"></circle>
+                            <circle cx="75" cy="95" fill="#2D9C9C" fill-opacity="0.5" r="3"></circle>
+                            <circle cx="65" cy="105" fill="#D4A853" r="4"></circle>
+                            <ellipse cx="65" cy="50" fill="#2D9C9C" rx="28" ry="24"></ellipse>
+                            <path d="M40 35L36 22L50 33Z" fill="#238080"></path>
+                            <path d="M90 35L94 22L80 33Z" fill="#238080"></path>
+                            <circle cx="50" cy="48" fill="white" r="10"></circle><circle cx="80" cy="48" fill="white" r="10"></circle>
+                            <circle cx="50" cy="48" fill="#3D3A36" r="5"></circle><circle cx="80" cy="48" fill="#3D3A36" r="5"></circle>
+                            <circle cx="50" cy="48" fill="white" r="2"></circle><circle cx="80" cy="48" fill="white" r="2"></circle>
+                            <path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-linecap="round" stroke-width="3"></path>
+                            <path d="M65 67L62 74L65 72L68 74Z" fill="#238080"></path>
+                        </svg>
+                        <span class="myth-title">Lo que SÍ esperar</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✓</span>
+                        <span><strong>Un rango</strong> donde probablemente esté el valor real</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✓</span>
+                        <span><strong>Saber dónde hay certeza</strong> y dónde hay incertidumbre</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✓</span>
+                        <span><strong>Detectar cambios reales</strong> vs. variabilidad normal</span>
+                    </div>
+                    <div class="myth-item">
+                        <span class="myth-bullet">✓</span>
+                        <span><strong>Decisiones informadas</strong> (con confianza, pero no perfecta)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ╔═══════════════════════════════════════════════╗
+             ║  SECCIÓN 4: EJEMPLO DE NEGOCIO               ║
+             ║  🦉 Pixel: Analizando                        ║
+             ╚═══════════════════════════════════════════════╝ -->
+        <div class="example-section">
+            <div class="example-header">
+                <div class="example-icon">📊</div>
+                <div class="example-title">Ejemplo: Piloto Día a Día Puntos - Venta por Cliente</div>
+                <!-- 🦉 PIXEL: Analizando -->
+                <svg fill="none" height="42" viewbox="0 0 130 140" width="36">
+                    <ellipse cx="60" cy="95" fill="#E85D4C" rx="32" ry="27"></ellipse>
+                    <ellipse cx="32" cy="86" fill="#C94A3A" rx="8" ry="14" transform="rotate(-15 32 86)"></ellipse>
+                    <ellipse cx="34" cy="84" fill="#E85D4C" rx="5" ry="10" transform="rotate(-15 34 84)"></ellipse>
+                    <ellipse cx="100" cy="72" fill="#C94A3A" rx="8" ry="16" transform="rotate(70 100 72)"></ellipse>
+                    <ellipse cx="98" cy="75" fill="#E85D4C" rx="5" ry="11" transform="rotate(70 98 75)"></ellipse>
+                    <ellipse cx="60" cy="100" fill="#FFF0EE" rx="19" ry="16"></ellipse>
+                    <circle cx="52" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="60" cy="91" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="68" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="60" cy="105" fill="#D4A853" r="4"></circle>
+                    <ellipse cx="60" cy="50" fill="#E85D4C" rx="28" ry="24"></ellipse>
+                    <path d="M37 35L33 22L46 33Z" fill="#C94A3A"></path>
+                    <path d="M83 35L87 22L74 33Z" fill="#C94A3A"></path>
+                    <circle cx="47" cy="48" fill="white" r="10"></circle><circle cx="73" cy="48" fill="white" r="10"></circle>
+                    <circle cx="50" cy="50" fill="#3D3A36" r="4"></circle><circle cx="76" cy="50" fill="#3D3A36" r="4"></circle>
+                    <circle cx="51" cy="48" fill="white" r="1.5"></circle><circle cx="77" cy="48" fill="white" r="1.5"></circle>
+                    <path d="M53 64C53 64 60 67 67 64" stroke="#D4A853" stroke-linecap="round" stroke-width="2"></path>
+                    <path d="M60 57L57 63L60 61L63 63Z" fill="#D4A853"></path>
+                </svg>
+            </div>
+
+            <div class="cases-grid">
+                <div class="case-card option-a">
+                    <div class="case-header">
+                        <span class="case-number">Enfoque Antiguo</span>
+                        <span class="case-label">Solo un Número</span>
+                    </div>
+                    <div class="case-rule"><span>📌</span> "Clientes en piloto venden $120 promedio"</div>
+                    <div class="case-detail"><strong class="a">Pregunta sin respuesta:</strong> ¿está bien $120 o está malo?</div>
+                    <div class="case-detail"><strong class="a">Sin contexto:</strong> no sabes si $120 es mejor o igual que los clientes normales.</div>
+                    <div class="case-detail"><strong class="a">Decisión ciega:</strong> ¿escalo el piloto? No sé si funcionó realmente.</div>
+                    <div class="case-result bad">
+                        <span class="result-label">Resultado</span>
+                        <span class="result-value">$120</span>
+                        <span class="result-desc">¿Es bueno? ¿Es malo? No sé.</span>
+                    </div>
+                </div>
+
+                <div class="case-card option-b">
+                    <div class="case-header">
+                        <span class="case-number">Enfoque Moderno</span>
+                        <span class="case-label">Con Intervalo de Confianza</span>
+                    </div>
+                    <div class="case-rule"><span>📊</span> "Comparar contra intervalo base"</div>
+                    <div class="case-detail"><strong class="b">Intervalo sin piloto:</strong> venta promedio está entre <strong>$110–$128</strong> (95% confianza).</div>
+                    <div class="case-detail"><strong class="b">Clientes en piloto:</strong> venta promedio es <strong>$145</strong>.</div>
+                    <div class="case-detail"><strong class="b">Conclusión:</strong> $145 está <strong>FUERA del rango</strong> → el piloto SÍ funcionó.</div>
+                    <div class="case-result good">
+                        <span class="result-label">Resultado</span>
+                        <span class="result-value">$145 vs $110–$128</span>
+                        <span class="result-desc">Incremento real detectado. Escalar.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-insight">
+                <span>🧭</span>
+                <div><strong>¿Cómo se traduce a decisión?</strong><br/>
+                ✅ Si el resultado del piloto está <strong>DENTRO del intervalo</strong> → es variabilidad normal, NO escales.<br/>
+                ✅ Si el resultado está <strong>FUERA del intervalo</strong> → el piloto generó un cambio real, ESCALA con confianza.<br/>
+                ⚠️ Si está muy cerca del borde del intervalo → recolecta más datos antes de decidir.
+                </div>
+            </div>
+
+            <div class="example-insight">
+                <span>💡</span>
+                <div><strong>La diferencia clave:</strong> Sin intervalos, "$120 promedio" es un número flotante sin contexto. Con intervalos de confianza, comparas contra el rango esperado y sabes si tu piloto realmente movió la aguja o es solo ruido. El intervalo es tu brújula: te dice si debes escalar, iterar, o abandonar.</div>
+            </div>
+        </div>
+
+        <!-- ╔═══════════════════════════════════════════════╗
+             ║  SECCIÓN 5: ERROR COMÚN                      ║
+             ║  🦉 Pixel: Preocupado                        ║
+             ╚═══════════════════════════════════════════════╝ -->
+        <div class="error-section">
+            <div class="error-header">
+                <div class="error-icon">⚠️</div>
+                <div class="error-title">Error común #1: Ignorar intervalos muy amplios</div>
+                <!-- 🦉 PIXEL: Preocupado -->
+                <svg fill="none" height="42" viewbox="0 0 130 140" width="36">
+                    <ellipse cx="65" cy="95" fill="#E85D4C" rx="32" ry="27"></ellipse>
+                    <ellipse cx="32" cy="86" fill="#C94A3A" rx="8" ry="14" transform="rotate(-15 32 86)"></ellipse>
+                    <ellipse cx="35" cy="84" fill="#E85D4C" rx="5" ry="10" transform="rotate(-15 35 84)"></ellipse>
+                    <ellipse cx="98" cy="86" fill="#C94A3A" rx="8" ry="14" transform="rotate(15 98 86)"></ellipse>
+                    <ellipse cx="95" cy="84" fill="#E85D4C" rx="5" ry="10" transform="rotate(15 95 84)"></ellipse>
+                    <ellipse cx="65" cy="100" fill="#FFF0EE" rx="19" ry="16"></ellipse>
+                    <circle cx="55" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="65" cy="91" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="75" cy="95" fill="#E85D4C" fill-opacity="0.5" r="3"></circle>
+                    <circle cx="65" cy="105" fill="#D4A853" r="4"></circle>
+                    <ellipse cx="65" cy="50" fill="#E85D4C" rx="28" ry="24"></ellipse>
+                    <path d="M40 35L36 22L50 33Z" fill="#C94A3A"></path>
+                    <path d="M90 35L94 22L80 33Z" fill="#C94A3A"></path>
+                    <circle cx="50" cy="48" fill="white" r="10"></circle><circle cx="80" cy="48" fill="white" r="10"></circle>
+                    <circle cx="50" cy="48" fill="#3D3A36" r="5"></circle><circle cx="80" cy="48" fill="#3D3A36" r="5"></circle>
+                    <circle cx="50" cy="48" fill="white" r="2"></circle><circle cx="80" cy="48" fill="white" r="2"></circle>
+                    <path d="M55 67C58 64 72 67 75 64" stroke="#D4A853" stroke-linecap="round" stroke-width="2"></path>
+                    <path d="M65 57L62 64L65 62L68 64Z" fill="#D4A853"></path>
+                    <ellipse cx="40" cy="60" fill="#C94A3A" rx="5" ry="8" transform="rotate(-30 40 60)"></ellipse>
+                </svg>
+            </div>
+            <div class="error-content">
+                <div class="error-box wrong">
+                    <div class="label">❌ Error común</div>
+                    <p>"El intervalo es $50 a $150, así que es inútil. Necesitamos un rango más estrecho o abandonar el análisis."</p>
+                </div>
+                <div class="error-box right">
+                    <div class="label">✓ Lo correcto</div>
+                    <p>Un intervalo amplio <strong>es información valiosa</strong>. Te dice que hay mucha variabilidad, que necesitas más datos, o que el segmento es heterogéneo. No abandones: investiga <em>por qué</em> es tan amplio. Tal vez necesites segmentar por canal, perfil de cliente, o período para tener rangos más precisos.</p>
+                </div>
+            </div>
+        </div>
+        <div class="takeaway">
+            <svg fill="none" height="58" viewbox="0 0 130 150" width="50">
+                <ellipse cx="65" cy="105" fill="#D4A853" rx="32" ry="27"></ellipse>
+                <ellipse cx="38" cy="100" fill="#C4983F" rx="8" ry="14" transform="rotate(-15 38 100)"></ellipse>
+                <ellipse cx="40" cy="98" fill="#D4A853" rx="5" ry="10" transform="rotate(-15 40 98)"></ellipse>
+                <ellipse cx="100" cy="78" fill="#C4983F" rx="8" ry="16" transform="rotate(50 100 78)"></ellipse>
+                <ellipse cx="97" cy="82" fill="#D4A853" rx="5" ry="11" transform="rotate(50 97 82)"></ellipse>
+                <ellipse cx="65" cy="110" fill="#FDF8EC" rx="19" ry="16"></ellipse>
+                <circle cx="55" cy="105" fill="#D4A853" fill-opacity="0.5" r="3"></circle>
+                <circle cx="65" cy="101" fill="#D4A853" fill-opacity="0.5" r="3"></circle>
+                <circle cx="75" cy="105" fill="#D4A853" fill-opacity="0.5" r="3"></circle>
+                <circle cx="65" cy="115" fill="#E85D4C" r="4"></circle>
+                <ellipse cx="65" cy="60" fill="#D4A853" rx="28" ry="24"></ellipse>
+                <path d="M42 45L38 32L52 43Z" fill="#C4983F"></path>
+                <path d="M88 45L92 32L78 43Z" fill="#C4983F"></path>
+                <circle cx="52" cy="58" fill="white" r="10"></circle><circle cx="78" cy="58" fill="white" r="10"></circle>
+                <circle cx="54" cy="60" fill="#D4A853" r="5"></circle><circle cx="80" cy="60" fill="#D4A853" r="5"></circle>
+                <circle cx="54" cy="60" fill="white" r="2"></circle><circle cx="80" cy="60" fill="white" r="2"></circle>
+                <path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-linecap="round" stroke-width="3"></path>
+                <path d="M65 67L62 74L65 72L68 74Z" fill="#C4983F"></path>
+                <circle cx="65" cy="12" fill="white" fill-opacity="0.95" r="10"></circle>
+                <path d="M65 2V7M55 12H60M70 12H75M57 5L60 8M73 5L70 8" stroke="#D4A853" stroke-linecap="round" stroke-width="2"></path>
+            </svg>
+            <div class="takeaway-text"><strong>Takeaway:</strong> Los intervalos de confianza son tu escudo contra decisiones basadas en ilusiones. No son para sonar "más científico"—son para reconocer dónde puede estar equivocado el número y prepararte para cambios reales en el negocio. Un rango honesto es más valioso que un punto falso.</div>
+        </div>
+
+        <!-- ╔═══════════════════════════════════════════════╗
+             ║  SECCIÓN 8: FOOTER — NO CAMBIAR               ║
+             ╚═══════════════════════════════════════════════╝ -->
+        <footer>
+            <div class="footer-logo">
+                <svg fill="none" viewbox="0 0 40 40">
+                    <rect fill="url(#fGradFooter)" height="40" rx="10" width="40"></rect>
+                    <circle cx="12" cy="15" fill="white" r="3"></circle>
+                    <circle cx="12" cy="20" fill="white" r="3"></circle>
+                    <circle cx="12" cy="25" fill="white" r="3"></circle>
+                    <circle cx="20" cy="17" fill="white" fill-opacity="0.7" r="3"></circle>
+                    <circle cx="20" cy="23" fill="white" fill-opacity="0.7" r="3"></circle>
+                    <circle cx="28" cy="20" fill="#D4A853" r="4"></circle>
+                    <defs><lineargradient id="fGradFooter" x1="0" x2="40" y1="0" y2="40"><stop stop-color="#E85D4C"></stop><stop offset="1" stop-color="#C94A3A"></stop></lineargradient></defs>
+                </svg>
+                <div class="footer-logo-text">
+                    <span class="footer-name">Advanced Analytics</span>
+                    <span class="footer-tagline">Data Science &amp; ML</span>
+                </div>
+            </div>
+            <div class="footer-tags">
+                <span class="footer-tag">Estadística</span>
+                <span class="footer-tag">Playbook Vol. 14</span>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
