@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cómo Hacer un Buen Prompt | Playbook Analytics Vol.15</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-cream: #FDFBF7; --bg-warm: #F8F5F0; --bg-card: #FFFFFF;
+      --text-primary: #3D3A36; --text-secondary: #4a4a5a; --text-muted: #7a7a8a;
+      --accent-coral: #E85D4C; --accent-coral-dark: #C94A3A; --accent-coral-light: #FFF0EE;
+      --accent-teal: #2D9C9C; --accent-teal-dark: #238080; --accent-teal-light: #E8F6F6;
+      --accent-gold: #D4A853; --accent-gold-dark: #C4983F; --accent-gold-light: #FDF8EC;
+      --accent-purple: #7C5CBF; --accent-purple-light: #F3EEFA;
+      --dark-warm: #3D3A36; --border-light: #E8E4DD; --shadow-sm: 0 2px 8px rgba(26,26,46,0.06);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    @page { size:A4; margin:0; }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg-cream); color:var(--text-primary); width:210mm; min-height:297mm; margin:0 auto; padding:24px; line-height:1.5; }
+
+    header { background:linear-gradient(135deg, var(--bg-warm) 0%, var(--bg-cream) 100%); border-radius:20px; padding:24px; margin-bottom:16px; position:relative; overflow:hidden; border:1px solid var(--border-light); }
+    header::before { content:''; position:absolute; bottom:-40px; right:-20px; width:200px; height:200px; background:radial-gradient(circle, var(--accent-purple-light) 0%, transparent 70%); border-radius:50%; }
+    .header-main { display:flex; align-items:center; gap:20px; position:relative; z-index:1; }
+    .header-avatar { flex-shrink:0; }
+    .header-text { flex:1; }
+    .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .area-logo { display:flex; align-items:center; gap:8px; }
+    .area-logo svg { width:30px; height:30px; }
+    .logo-name { font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; color:var(--text-primary); display:block; }
+    .logo-tagline { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; }
+    .badge { display:flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-light); padding:4px 12px; border-radius:100px; font-size:10px; font-weight:600; color:var(--accent-purple); text-transform:uppercase; }
+    .badge-dot { width:6px; height:6px; background:var(--accent-purple); border-radius:50%; }
+    .badge-vol { background:var(--accent-purple); color:white; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700; }
+    h1 { font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; line-height:1.2; color:var(--text-primary); margin-bottom:8px; }
+    h1 .highlight { color:var(--accent-purple); }
+    .subtitle { font-size:12px; color:var(--text-muted); max-width:420px; }
+
+    .problem-section { background:var(--bg-card); border-left:4px solid var(--accent-gold); border-radius:0 14px 14px 0; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow-sm); }
+    .problem-content h2 { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; color:var(--accent-purple); margin-bottom:6px; }
+    .problem-content p { font-size:11px; color:var(--text-secondary); line-height:1.6; }
+    .problem-content p strong { color:var(--text-primary); }
+
+    /* ── FRAMEWORK ─── */
+    .framework-section { background:var(--bg-card); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow-sm); border:1px solid var(--border-light); }
+    .framework-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border-light); }
+    .framework-header-icon { font-size:16px; }
+    .framework-header-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; color:var(--accent-purple); flex:1; }
+
+    .framework-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px; }
+    .fw-card { border-radius:12px; padding:14px; border:1px solid var(--border-light); background:var(--bg-warm); }
+    .fw-card.fw-1 { border-left:4px solid var(--accent-purple); }
+    .fw-card.fw-2 { border-left:4px solid var(--accent-teal); }
+    .fw-card.fw-3 { border-left:4px solid var(--accent-coral); }
+    .fw-card.fw-4 { border-left:4px solid var(--accent-gold); }
+    .fw-card.fw-5 { border-left:4px solid var(--accent-teal); }
+    .fw-card.fw-6 { border-left:4px solid var(--accent-coral); }
+    .fw-num { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; line-height:1; margin-bottom:4px; }
+    .fw-card.fw-1 .fw-num { color:var(--accent-purple); }
+    .fw-card.fw-2 .fw-num { color:var(--accent-teal); }
+    .fw-card.fw-3 .fw-num { color:var(--accent-coral); }
+    .fw-card.fw-4 .fw-num { color:var(--accent-gold); }
+    .fw-card.fw-5 .fw-num { color:var(--accent-teal); }
+    .fw-card.fw-6 .fw-num { color:var(--accent-coral); }
+    .fw-title { font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
+    .fw-desc { font-size:9px; color:var(--text-secondary); line-height:1.5; }
+    .fw-tag { display:inline-block; margin-top:6px; font-size:8px; font-weight:700; padding:2px 7px; border-radius:4px; color:white; }
+    .fw-tag.purple { background:var(--accent-purple); }
+    .fw-tag.teal { background:var(--accent-teal); }
+    .fw-tag.coral { background:var(--accent-coral); }
+    .fw-tag.gold { background:var(--accent-gold); }
+
+    .framework-insight { background:var(--accent-gold-light); border-radius:8px; padding:10px 12px; display:flex; gap:8px; align-items:flex-start; font-size:10px; color:var(--text-secondary); line-height:1.5; }
+    .framework-insight strong { color:var(--accent-gold); }
+
+    /* ── EXAMPLE (antes/después) ─── */
+    .example-section { background:var(--bg-card); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow-sm); border:1px solid var(--border-light); }
+    .example-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border-light); }
+    .example-icon { font-size:16px; }
+    .example-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; color:var(--accent-coral); flex:1; }
+
+    .cases-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+    .case-card { border-radius:12px; padding:12px; }
+    .case-card.option-a { border:1px dashed rgba(232,93,76,0.3); background:var(--accent-coral-light); }
+    .case-card.option-b { border:2px solid var(--accent-teal); background:var(--accent-teal-light); }
+    .case-header { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+    .case-number { font-family:'Space Grotesk',sans-serif; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; text-transform:uppercase; color:white; }
+    .case-card.option-a .case-number { background:var(--accent-coral); }
+    .case-card.option-b .case-number { background:var(--accent-teal); }
+    .case-label { font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:700; }
+    .case-card.option-a .case-label { color:var(--accent-coral); }
+    .case-card.option-b .case-label { color:var(--accent-teal); }
+    .prompt-box { background:white; border-radius:8px; padding:10px 12px; margin-bottom:8px; font-family:'DM Sans',monospace; font-size:10px; line-height:1.5; color:var(--text-secondary); border:1px solid var(--border-light); white-space:pre-wrap; }
+    .case-detail { font-size:9px; margin-bottom:4px; line-height:1.4; color:var(--text-secondary); }
+    .case-detail strong.a { color:var(--accent-coral); }
+    .case-detail strong.b { color:var(--accent-teal); }
+    .case-result { border-radius:6px; padding:8px; text-align:center; margin-top:8px; }
+    .case-result.bad { background:rgba(232,93,76,0.1); }
+    .case-result.good { background:rgba(45,156,156,0.15); }
+    .result-label { display:block; font-size:8px; text-transform:uppercase; color:var(--text-muted); margin-bottom:2px; }
+    .result-value { display:block; font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; }
+    .case-result.bad .result-value { color:var(--accent-coral); }
+    .case-result.good .result-value { color:var(--accent-teal); }
+    .result-desc { display:block; font-size:8px; color:var(--text-muted); margin-top:2px; }
+
+    .example-insight { background:var(--accent-gold-light); border-top:2px solid var(--accent-gold); border-radius:0 0 8px 8px; padding:10px 14px; display:flex; align-items:flex-start; gap:8px; font-size:10px; color:var(--text-secondary); line-height:1.5; }
+    .example-insight strong { color:var(--accent-gold); }
+    .example-insight em { color:var(--accent-purple); font-style:normal; font-weight:600; }
+
+    /* ── ERRORS ─── */
+    .errors-section { background:var(--bg-card); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow-sm); border:1px solid var(--border-light); }
+    .errors-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border-light); }
+    .errors-header-icon { width:28px; height:28px; background:var(--accent-coral); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .errors-header-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; color:var(--accent-coral); flex:1; }
+    .errors-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .error-item { border-radius:10px; padding:12px; background:var(--bg-warm); border:1px solid var(--border-light); }
+    .error-item-header { display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; }
+    .error-item-emoji { font-size:16px; flex-shrink:0; }
+    .error-item-title { font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:700; color:var(--accent-coral); }
+    .error-item-wrong { font-size:9px; color:var(--text-secondary); margin-bottom:6px; line-height:1.4; padding:6px 8px; background:var(--accent-coral-light); border-radius:6px; border-left:2px solid var(--accent-coral); }
+    .error-item-fix { font-size:9px; color:var(--text-secondary); line-height:1.4; padding:6px 8px; background:var(--accent-teal-light); border-radius:6px; border-left:2px solid var(--accent-teal); }
+    .error-item-fix strong { color:var(--accent-teal); }
+    .error-item-wrong strong { color:var(--accent-coral); }
+
+    /* ── CHECKLIST ─── */
+    .checklist-section { background:linear-gradient(135deg, #2a1a40 0%, #7C5CBF 100%); border-radius:16px; padding:16px; margin-bottom:16px; }
+    .checklist-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+    .checklist-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; color:white; flex:1; }
+    .checklist-sub { font-size:10px; color:rgba(255,255,255,0.6); }
+    .checklist-cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .checklist-col-title { font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:700; color:rgba(255,255,255,0.9); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.2); }
+    .checklist-item { display:flex; align-items:flex-start; gap:8px; margin-bottom:7px; background:rgba(255,255,255,0.08); border-radius:8px; padding:7px 9px; border:1px solid rgba(255,255,255,0.1); }
+    .checklist-item-icon { font-size:13px; flex-shrink:0; margin-top:1px; }
+    .checklist-item-name { font-size:10px; font-weight:600; color:white; display:block; }
+    .checklist-item-desc { font-size:8px; color:rgba(255,255,255,0.65); display:block; line-height:1.4; }
+
+    /* ── TAKEAWAY ─── */
+    .takeaway { background:linear-gradient(135deg, var(--dark-warm) 0%, #2a1a40 100%); border-radius:12px; padding:14px 16px; margin-bottom:14px; display:flex; align-items:center; gap:14px; }
+    .takeaway-text { font-size:11px; color:rgba(255,255,255,0.85); line-height:1.6; }
+    .takeaway-text strong { color:var(--accent-gold); font-weight:700; }
+
+    /* ── FOOTER ─── */
+    footer { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-top:1px solid var(--border-light); }
+    .footer-logo { display:flex; align-items:center; gap:8px; }
+    .footer-logo svg { width:24px; height:24px; }
+    .footer-name { font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:700; color:var(--text-primary); display:block; }
+    .footer-tagline { font-size:8px; color:var(--text-muted); display:block; }
+    .footer-tags { display:flex; gap:6px; }
+    .footer-tag { font-size:9px; background:var(--bg-warm); padding:3px 10px; border-radius:100px; color:var(--text-muted); border:1px solid var(--border-light); }
+
+    html { background:#f0ede8; }
+    .web-wrapper { max-width:210mm; margin:0 auto; padding:32px 16px; }
+    @media (max-width:800px) { body { width:100% !important; padding:16px !important; } .framework-grid,.errors-grid,.checklist-cols,.cases-grid { grid-template-columns:1fr !important; } h1 { font-size:22px !important; } .web-wrapper { padding:16px 8px; } }
+    .back-bar { position:sticky; top:0; z-index:100; background:rgba(100,70,160,0.97); backdrop-filter:blur(10px); padding:8px 20px; display:flex; align-items:center; justify-content:space-between; border-radius:0 0 12px 12px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
+    .back-btn { display:inline-flex; align-items:center; gap:6px; color:white; text-decoration:none; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; padding:6px 14px; border-radius:100px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); transition:all 0.2s ease; }
+    .back-btn:hover { background:rgba(255,255,255,0.2); }
+    .back-btn svg { width:14px; height:14px; }
+    .back-bar-label { font-family:'Space Grotesk',sans-serif; font-size:10px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.8px; }
+    @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } .back-bar { display:none; } .web-wrapper { padding:0; } }
+  </style>
+</head>
+<body>
+<div class="web-wrapper">
+  <div class="back-bar">
+    <a href="../" class="back-btn"><svg viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos los Playbooks</a>
+    <span class="back-bar-label">Playbook Vol. 15</span>
+  </div>
+
+  <header>
+    <div class="header-main">
+      <div class="header-avatar">
+        <svg width="95" height="110" viewBox="0 0 130 140" fill="none">
+          <ellipse cx="30" cy="95" rx="10" ry="16" fill="#6a4da0" transform="rotate(10 30 95)"/><ellipse cx="32" cy="94" rx="6" ry="12" fill="#5c4290" transform="rotate(10 32 94)"/>
+          <ellipse cx="100" cy="95" rx="10" ry="16" fill="#6a4da0" transform="rotate(-10 100 95)"/><ellipse cx="98" cy="94" rx="6" ry="12" fill="#5c4290" transform="rotate(-10 98 94)"/>
+          <ellipse cx="65" cy="95" rx="38" ry="33" fill="url(#pBody)"/>
+          <ellipse cx="65" cy="100" rx="26" ry="23" fill="#F3EEFA"/>
+          <!-- Chat bubble icon on belly -->
+          <rect x="48" y="86" width="34" height="22" rx="6" fill="none" stroke="#7C5CBF" stroke-width="2"/>
+          <path d="M58 112L54 118L62 112" fill="none" stroke="#7C5CBF" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="54" y1="93" x2="76" y2="93" stroke="#7C5CBF" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <line x1="54" y1="98" x2="70" y2="98" stroke="#7C5CBF" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <line x1="54" y1="103" x2="66" y2="103" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="65" cy="50" rx="33" ry="28" fill="url(#pHead)"/>
+          <path d="M37 35L32 17L47 30Z" fill="#6a4da0"/><path d="M93 35L98 17L83 30Z" fill="#6a4da0"/>
+          <circle cx="50" cy="48" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/><circle cx="80" cy="48" r="13" fill="white" stroke="#3D3A36" stroke-width="2"/>
+          <circle cx="52" cy="50" r="6" fill="#3D3A36"/><circle cx="82" cy="50" r="6" fill="#3D3A36"/>
+          <circle cx="54" cy="48" r="2" fill="white"/><circle cx="84" cy="48" r="2" fill="white"/>
+          <path d="M37 48C37 48 42 43 50 43" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+          <path d="M93 48C93 48 88 43 80 43" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+          <line x1="62" y1="48" x2="68" y2="48" stroke="#D4A853" stroke-width="3"/>
+          <path d="M65 60L61 69L65 67L69 69Z" fill="#D4A853"/>
+          <path d="M50 123L45 133M50 123L50 133M50 123L55 133" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+          <path d="M80 123L75 133M80 123L80 133M80 123L85 133" stroke="#D4A853" stroke-width="3" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="pBody" x1="27" y1="62" x2="103" y2="128"><stop stop-color="#7C5CBF"/><stop offset="1" stop-color="#6a4da0"/></linearGradient>
+            <linearGradient id="pHead" x1="32" y1="22" x2="98" y2="78"><stop stop-color="#7C5CBF"/><stop offset="1" stop-color="#6a4da0"/></linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="header-text">
+        <div class="header-top">
+          <div class="area-logo"><svg viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="url(#logoG15)"/><circle cx="12" cy="15" r="3" fill="white"/><circle cx="12" cy="20" r="3" fill="white"/><circle cx="12" cy="25" r="3" fill="white"/><circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/><circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/><circle cx="28" cy="20" r="4" fill="#D4A853"/><defs><linearGradient id="logoG15" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#7C5CBF"/><stop offset="1" stop-color="#6a4da0"/></linearGradient></defs></svg><div><span class="logo-name">Advanced Analytics</span><span class="logo-tagline">Data Science & ML</span></div></div>
+          <div class="badge"><span class="badge-dot"></span>Playbook<span class="badge-vol">Vol. 15</span></div>
+        </div>
+        <h1>Cómo hacer un buen <span class="highlight">prompt</span></h1>
+        <p class="subtitle">La calidad de la respuesta de una IA depende directamente de cómo le preguntas. Un prompt bien estructurado convierte un asistente genérico en un analista experto.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="problem-section">
+    <svg width="46" height="53" viewBox="0 0 120 140" fill="none">
+      <ellipse cx="60" cy="95" rx="36" ry="31" fill="#7C5CBF"/><ellipse cx="32" cy="70" rx="9" ry="16" fill="#6a4da0" transform="rotate(-30 32 70)"/><ellipse cx="35" cy="72" rx="6" ry="11" fill="#7C5CBF" transform="rotate(-30 35 72)"/><ellipse cx="92" cy="88" rx="9" ry="15" fill="#6a4da0" transform="rotate(15 92 88)"/><ellipse cx="90" cy="86" rx="6" ry="11" fill="#7C5CBF" transform="rotate(15 90 86)"/><ellipse cx="60" cy="100" rx="22" ry="19" fill="#F3EEFA"/><circle cx="50" cy="92" r="4" fill="#7C5CBF" fill-opacity="0.5"/><circle cx="60" cy="87" r="4" fill="#7C5CBF" fill-opacity="0.5"/><circle cx="70" cy="92" r="4" fill="#7C5CBF" fill-opacity="0.5"/><circle cx="60" cy="106" r="5" fill="#D4A853"/><ellipse cx="60" cy="50" rx="32" ry="27" fill="#7C5CBF"/><path d="M33 35L29 19L43 32Z" fill="#6a4da0"/><path d="M87 35L91 19L77 32Z" fill="#6a4da0"/><circle cx="46" cy="48" r="12" fill="white"/><circle cx="74" cy="48" r="12" fill="white"/><circle cx="48" cy="45" r="5" fill="#3D3A36"/><circle cx="76" cy="45" r="5" fill="#3D3A36"/><circle cx="49" cy="43" r="1.5" fill="white"/><circle cx="77" cy="43" r="1.5" fill="white"/><path d="M54 67C54 67 60 67 66 67" stroke="#D4A853" stroke-width="2.5" stroke-linecap="round"/><path d="M60 59L57 66L60 64L63 66Z" fill="#D4A853"/><text x="88" y="26" fill="#D4A853" font-size="14" font-weight="bold">?</text>
+    </svg>
+    <div class="problem-content">
+      <h2>🎯 El problema que resuelve</h2>
+      <p>La mayoría de usuarios escribe prompts vagos y obtiene respuestas genéricas. Luego concluye que "la IA no sirve para mi caso". El problema no es la IA — es que <strong>un prompt sin contexto, sin rol y sin formato esperado produce basura</strong>. Este playbook te da la estructura para sacarle el máximo valor.</p>
+    </div>
+  </div>
+
+  <!-- ① FRAMEWORK: 6 componentes de un buen prompt -->
+  <div class="framework-section">
+    <div class="framework-header">
+      <div class="framework-header-icon">🧩</div>
+      <div class="framework-header-title">Los 6 componentes de un prompt efectivo</div>
+    </div>
+    <div class="framework-grid">
+      <div class="fw-card fw-1"><div class="fw-num">1</div><div class="fw-title">Rol</div><div class="fw-desc">Dale una identidad al modelo: "Eres un analista senior de datos con experiencia en retail". Esto activa el conocimiento especializado.</div><span class="fw-tag purple">Quién</span></div>
+      <div class="fw-card fw-2"><div class="fw-num">2</div><div class="fw-title">Contexto</div><div class="fw-desc">Explica tu situación: industria, datos disponibles, audiencia. Sin contexto, la IA rellena con suposiciones genéricas.</div><span class="fw-tag teal">Dónde</span></div>
+      <div class="fw-card fw-3"><div class="fw-num">3</div><div class="fw-title">Tarea</div><div class="fw-desc">Sé explícito en lo que necesitas: "Analiza", "Compara", "Escribe un reporte de 500 palabras". Verbos de acción claros.</div><span class="fw-tag coral">Qué</span></div>
+      <div class="fw-card fw-4"><div class="fw-num">4</div><div class="fw-title">Formato</div><div class="fw-desc">Define cómo quieres la salida: tabla, bullet points, JSON, párrafo ejecutivo. Sin esto, la IA elige por ti.</div><span class="fw-tag gold">Cómo</span></div>
+      <div class="fw-card fw-5"><div class="fw-num">5</div><div class="fw-title">Ejemplos</div><div class="fw-desc">Muestra un ejemplo de lo que esperas (few-shot). Un ejemplo vale más que 100 palabras de instrucciones.</div><span class="fw-tag teal">Referencia</span></div>
+      <div class="fw-card fw-6"><div class="fw-num">6</div><div class="fw-title">Restricciones</div><div class="fw-desc">Ponle límites: "No uses jerga técnica", "Máximo 3 párrafos", "Solo datos de 2024". Los guardrails mejoran la calidad.</div><span class="fw-tag coral">Límites</span></div>
+    </div>
+    <div class="framework-insight"><span>💡</span><div><strong>La regla 80/20:</strong> No necesitas los 6 en cada prompt. Para consultas simples basta Rol + Tarea + Formato. Para análisis complejos, usa los 6. Cuanto más ambigua la tarea, más componentes necesitas.</div></div>
+  </div>
+
+  <!-- ② EJEMPLO: Antes vs Después -->
+  <div class="example-section">
+    <div class="example-header"><div class="example-icon">📊</div><div class="example-title">Ejemplo: Analizar caída de ventas</div></div>
+    <div class="cases-grid">
+      <div class="case-card option-a">
+        <div class="case-header"><span class="case-number">Antes</span><span class="case-label">Prompt vago</span></div>
+        <div class="prompt-box">Analiza las ventas</div>
+        <div class="case-detail">🤷 <strong class="a">Sin rol:</strong> la IA no sabe desde qué expertise responder</div>
+        <div class="case-detail">📝 <strong class="a">Sin contexto:</strong> ¿qué ventas? ¿qué período? ¿qué negocio?</div>
+        <div class="case-detail">📋 <strong class="a">Sin formato:</strong> respuesta genérica de 2 páginas sin estructura</div>
+        <div class="case-result bad"><span class="result-label">Resultado</span><span class="result-value">Genérico</span><span class="result-desc">Respuesta que no se puede usar</span></div>
+      </div>
+      <div class="case-card option-b">
+        <div class="case-header"><span class="case-number">Después</span><span class="case-label">Prompt estructurado</span></div>
+        <div class="prompt-box"><strong>Rol:</strong> Eres un analista senior de retail.
+<strong>Contexto:</strong> Ventas Q1 2025 cayeron 12% vs Q1 2024 en canal moderno. Tengo data por SKU, zona y semana.
+<strong>Tarea:</strong> Identifica las 3 causas más probables y sugiere acciones.
+<strong>Formato:</strong> Tabla con: Causa | Evidencia | Acción | Impacto esperado.
+<strong>Restricción:</strong> Máximo 5 filas. Lenguaje para directivos.</div>
+        <div class="case-result good"><span class="result-label">Resultado</span><span class="result-value">Accionable</span><span class="result-desc">Tabla lista para presentar a gerencia</span></div>
+      </div>
+    </div>
+    <div class="example-insight"><span>💡</span><div><strong>La diferencia:</strong> el mismo modelo, la misma IA — la única variable que cambió es <em>cómo le preguntaste</em>. Un buen prompt transforma una respuesta de Wikipedia en un análisis de consultor.</div></div>
+  </div>
+
+  <!-- ③ ERRORES COMUNES -->
+  <div class="errors-section">
+    <div class="errors-header"><div class="errors-header-icon">⚠️</div><div class="errors-header-title">Errores comunes — y cómo evitarlos</div></div>
+    <div class="errors-grid">
+      <div class="error-item"><div class="error-item-header"><div class="error-item-emoji">🌊</div><div class="error-item-title">Error 1: Prompt demasiado largo y confuso</div></div><div class="error-item-wrong"><strong>Lo que pasa:</strong> "Necesito que analices todo sobre las ventas incluyendo tendencias y segmentos y también me digas qué pasará el próximo mes y además..."</div><div class="error-item-fix"><strong>Cómo evitarlo:</strong> Una tarea por prompt. Si necesitas 3 análisis, haz 3 prompts. La IA pierde foco con instrucciones apiladas.</div></div>
+      <div class="error-item"><div class="error-item-header"><div class="error-item-emoji">🎯</div><div class="error-item-title">Error 2: No iterar cuando la respuesta no sirve</div></div><div class="error-item-wrong"><strong>Lo que pasa:</strong> "La IA me respondió mal → la IA no sirve." Se abandona el prompt al primer intento.</div><div class="error-item-fix"><strong>Cómo evitarlo:</strong> Trata el prompt como un draft. Refina: "Hazlo más corto", "Enfócate solo en X", "Agrega la columna Y". La iteración es la clave.</div></div>
+      <div class="error-item"><div class="error-item-header"><div class="error-item-emoji">📋</div><div class="error-item-title">Error 3: No dar ejemplos de la salida esperada</div></div><div class="error-item-wrong"><strong>Lo que pasa:</strong> Pides "un reporte" y la IA te da algo con formato y tono que no necesitas.</div><div class="error-item-fix"><strong>Cómo evitarlo:</strong> Incluye un ejemplo: "Quiero algo así: [ejemplo de 2 filas de la tabla]". El few-shot alinea expectativas al instante.</div></div>
+      <div class="error-item"><div class="error-item-header"><div class="error-item-emoji">🔒</div><div class="error-item-title">Error 4: Compartir datos sensibles en el prompt</div></div><div class="error-item-wrong"><strong>Lo que pasa:</strong> Se pegan nombres reales, datos de clientes, montos exactos confidenciales en la ventana del chat.</div><div class="error-item-fix"><strong>Cómo evitarlo:</strong> Anonimiza antes de promptear: "Cliente A", rangos en vez de montos exactos. O usa la API con data retention desactivada.</div></div>
+    </div>
+  </div>
+
+  <!-- ④ CHECKLIST -->
+  <div class="checklist-section">
+    <div class="checklist-header"><div style="font-size:16px;">🧰</div><div class="checklist-title">Checklist rápido antes de enviar un prompt</div><span class="checklist-sub">Verifica antes de darle Enter</span></div>
+    <div class="checklist-cols">
+      <div class="checklist-col">
+        <div class="checklist-col-title">✅ Estructura del prompt</div>
+        <div class="checklist-item"><div class="checklist-item-icon">👤</div><div class="checklist-item-text"><span class="checklist-item-name">¿Definiste un rol?</span><span class="checklist-item-desc">"Eres un analista de…" activa expertise específico y mejora la profundidad.</span></div></div>
+        <div class="checklist-item"><div class="checklist-item-icon">🎯</div><div class="checklist-item-text"><span class="checklist-item-name">¿La tarea es una sola y clara?</span><span class="checklist-item-desc">Un verbo de acción, un entregable. "Compara X e Y en una tabla de 5 filas."</span></div></div>
+        <div class="checklist-item"><div class="checklist-item-icon">📐</div><div class="checklist-item-text"><span class="checklist-item-name">¿Pediste un formato específico?</span><span class="checklist-item-desc">Tabla, bullets, JSON, párrafo ejecutivo. La IA necesita saber CÓMO entregar.</span></div></div>
+        <div class="checklist-item"><div class="checklist-item-icon">🚫</div><div class="checklist-item-text"><span class="checklist-item-name">¿Pusiste restricciones?</span><span class="checklist-item-desc">Largo máximo, idioma, tono, qué NO incluir. Los límites mejoran la calidad.</span></div></div>
+      </div>
+      <div class="checklist-col">
+        <div class="checklist-col-title">🔄 Después de la respuesta</div>
+        <div class="checklist-item"><div class="checklist-item-icon">🔍</div><div class="checklist-item-text"><span class="checklist-item-name">¿La respuesta es accionable?</span><span class="checklist-item-desc">Si no puedes hacer algo con ella, refina el prompt. "Sé más específico en las acciones."</span></div></div>
+        <div class="checklist-item"><div class="checklist-item-icon">✏️</div><div class="checklist-item-text"><span class="checklist-item-name">¿Iteraste al menos una vez?</span><span class="checklist-item-desc">El primer output rara vez es el mejor. "Ahora hazlo más conciso" o "Agrega métricas".</span></div></div>
+        <div class="checklist-item"><div class="checklist-item-icon">⚠️</div><div class="checklist-item-text"><span class="checklist-item-name">¿Verificaste los datos?</span><span class="checklist-item-desc">La IA puede inventar cifras. Valida números, fechas y fuentes antes de usar el output.</span></div></div>
+        <div class="checklist-item"><div class="checklist-item-icon">💾</div><div class="checklist-item-text"><span class="checklist-item-name">¿Guardaste el prompt que funcionó?</span><span class="checklist-item-desc">Los buenos prompts son reutilizables. Crea una librería de templates para tu equipo.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAKEAWAY -->
+  <div class="takeaway">
+    <svg width="50" height="58" viewBox="0 0 130 150" fill="none"><ellipse cx="65" cy="105" rx="32" ry="27" fill="#D4A853"/><ellipse cx="38" cy="100" rx="8" ry="14" fill="#C4983F" transform="rotate(-15 38 100)"/><ellipse cx="40" cy="98" rx="5" ry="10" fill="#D4A853" transform="rotate(-15 40 98)"/><ellipse cx="100" cy="78" rx="8" ry="16" fill="#C4983F" transform="rotate(50 100 78)"/><ellipse cx="97" cy="82" rx="5" ry="11" fill="#D4A853" transform="rotate(50 97 82)"/><ellipse cx="65" cy="110" rx="19" ry="16" fill="#FDF8EC"/><circle cx="55" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/><circle cx="65" cy="101" r="3" fill="#D4A853" fill-opacity="0.5"/><circle cx="75" cy="105" r="3" fill="#D4A853" fill-opacity="0.5"/><circle cx="65" cy="115" r="4" fill="#E85D4C"/><ellipse cx="65" cy="60" rx="28" ry="24" fill="#D4A853"/><path d="M42 45L38 32L52 43Z" fill="#C4983F"/><path d="M88 45L92 32L78 43Z" fill="#C4983F"/><circle cx="52" cy="58" r="10" fill="white"/><circle cx="78" cy="58" r="10" fill="white"/><circle cx="54" cy="60" r="5" fill="#D4A853"/><circle cx="80" cy="60" r="5" fill="#D4A853"/><circle cx="54" cy="60" r="2" fill="white"/><circle cx="80" cy="60" r="2" fill="white"/><path d="M55 74C55 74 65 84 75 74" stroke="white" stroke-width="3" stroke-linecap="round"/><path d="M65 67L62 74L65 72L68 74Z" fill="#C4983F"/><circle cx="65" cy="12" r="10" fill="white" fill-opacity="0.95"/><path d="M65 2V7M55 12H60M70 12H75M57 5L60 8M73 5L70 8" stroke="#D4A853" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="takeaway-text">
+      <strong>Regla de oro:</strong> Un buen prompt no es largo — es <strong>claro</strong>. Rol + Contexto + Tarea + Formato es todo lo que necesitas para convertir cualquier IA generativa en tu analista personal. Si la respuesta no sirve, el prompt es el primer lugar donde buscar la causa.
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><svg viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="url(#fG15)"/><circle cx="12" cy="15" r="3" fill="white"/><circle cx="12" cy="20" r="3" fill="white"/><circle cx="12" cy="25" r="3" fill="white"/><circle cx="20" cy="17" r="3" fill="white" fill-opacity="0.7"/><circle cx="20" cy="23" r="3" fill="white" fill-opacity="0.7"/><circle cx="28" cy="20" r="4" fill="#D4A853"/><defs><linearGradient id="fG15" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#7C5CBF"/><stop offset="1" stop-color="#6a4da0"/></linearGradient></defs></svg><div><span class="footer-name">Advanced Analytics</span><span class="footer-tagline">Data Science & ML · CoE</span></div></div>
+    <div class="footer-tags"><span class="footer-tag">Prompt Engineering</span><span class="footer-tag">IA Generativa</span><span class="footer-tag">Productividad</span><span class="footer-tag">Playbook Vol. 15</span></div>
+  </footer>
+</div>
+</body>
+</html>
